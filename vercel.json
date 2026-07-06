@@ -1,6 +1,5 @@
 {
-  "cleanUrls": true,
   "rewrites": [
-    { "source": "/p/:id", "destination": "/personale.html" }
+    { "source": "/p/:path*", "destination": "/personale.html" }
   ]
 }
