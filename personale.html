@@ -69,22 +69,23 @@
 
         .content { 
             flex: 1; 
-            padding: 30px 15px; 
+            padding: 15px 15px 30px 15px; 
             max-width: 450px; 
             margin: 0 auto; 
             width: 100%; 
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
         }
 
         .card {
             background: var(--card-bg);
             border-radius: 16px;
-            padding: 30px 20px;
+            padding: 25px 20px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             border: 1px solid #eaeaea;
             text-align: center;
+            margin-top: 5px;
         }
 
         .badge-tessera {
@@ -95,7 +96,7 @@
             font-weight: 700;
             padding: 6px 14px;
             border-radius: 20px;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
             margin-bottom: 12px;
         }
@@ -112,7 +113,7 @@
 
         .score-box {
             background: #f8faf9;
-            border: 2px dashed var(--verde-scuro);
+            border: 1px solid var(--verde-scuro);
             border-radius: 12px;
             padding: 20px 15px;
             margin-top: 10px;
@@ -159,10 +160,11 @@
         <h1 style="font-family:'Anton'; color:var(--verde-scuro); margin:0; font-size:32px;">FANTA<i>FONTA</i></h1>
     </div>
 
+    <!-- Ordine aggiornato: Personale -> Classifica -> Regolamento -->
     <div class="nav-buttons">
+        <a href="#" class="btn active">Personale</a>
         <a href="index.html" class="btn">Classifica</a>
         <a href="regolamento.html" class="btn">Regolamento</a>
-        <a href="#" class="btn active">Personale</a>
     </div>
 
     <div class="content" id="content-area">
@@ -213,7 +215,7 @@
                 if (!data || data.length === 0) {
                     contentArea.innerHTML = `
                         <div class="card">
-                            <div class="badge-tessera">Tessera #${numTessera}</div>
+                            <div class="badge-tessera">Tessera n° ${numTessera}</div>
                             <div class="not-active-msg">Tessera non trovata.</div>
                         </div>`;
                     return;
@@ -224,18 +226,18 @@
                 if (!tessera.attiva) {
                     contentArea.innerHTML = `
                         <div class="card">
-                            <div class="badge-tessera">Tessera #${tessera.numero_tessera}</div>
+                            <div class="badge-tessera">Tessera n° ${tessera.numero_tessera}</div>
                             <div class="not-active-msg">Questa tessera non è ancora stata attivata.<br>Acquistala dallo staff per iniziare a giocare!</div>
                         </div>`;
                     return;
                 }
 
-                const nome = tessera.nome_tifoso || `TESSERA #${tessera.numero_tessera}`;
+                const nome = tessera.nome_tifoso || `TESSERA N° ${tessera.numero_tessera}`;
                 const punti = (tessera.punti !== undefined && tessera.punti !== null) ? tessera.punti : 0;
 
                 contentArea.innerHTML = `
                     <div class="card">
-                        <div class="badge-tessera">TESSERA #${tessera.numero_tessera}</div>
+                        <div class="badge-tessera">TESSERA N° ${tessera.numero_tessera}</div>
                         <div class="player-name">${nome}</div>
                         <div class="score-box">
                             <div class="score-label">Punti Totali</div>
