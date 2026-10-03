@@ -169,8 +169,8 @@
 
     <script>
         const SUPABASE_URL = 'https://xyyvmobvcqgbqracdkki.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_AuD-8UcUGqNI4UygtYSRDA_wa7mVH4f';
-        
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eXZtb2J2Y2dnYnFyYWNka2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTU3MDYsImV4cCI6MjA5ODM5MTcwNn0.QpN5HQQxdz77w50e-OOd9GdnoX2B7y8d-4CYeNWyx2U';
+
         let _supabase;
         if (window.supabase) {
             _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -196,25 +196,15 @@
             }
 
             try {
-                let { data: tessere, error: errTessera } = await _supabase
+                const { data: tessere, error: errTessera } = await _supabase
                     .from('Tessere')
                     .select('*')
-                    .eq('numero_tessera', numTesseraInt);
-
-                if (!tessere || tessere.length === 0) {
-                    let resId = await _supabase
-                        .from('Tessere')
-                        .select('*')
-                        .eq('id', numTesseraInt);
-                    if (resId.data && resId.data.length > 0) {
-                        tessere = resId.data;
-                    }
-                }
+                    .or(`numero_tessera.eq.${numTesseraInt},id.eq.${numTesseraInt}`);
 
                 if (errTessera) {
                     contentArea.innerHTML = `
-                        <div class="not-active-msg">Errore durante la lettura dati.</div>
-                        <div class="debug-error"><b>Dettaglio Errore Supabase:</b><br>${errTessera.message}</div>
+                        <div class="not-active-msg">Errore lettura dati.</div>
+                        <div class="debug-error"><b>Errore Supabase:</b> ${errTessera.message}</div>
                     `;
                     return;
                 }
@@ -242,9 +232,7 @@
                         .eq('numero_tessera', numTesseraInt)
                         .order('created_at', { ascending: false });
                     if (dataCronologia) cronologia = dataCronologia;
-                } catch (e) {
-                    // Ignora
-                }
+                } catch (e) {}
 
                 const fotoUrl = tessera.foto_url || 'https://via.placeholder.com/150/006633/FFFFFF?text=FantaFonta';
                 let htmlCronologia = '<div class="timeline-box"><p class="timeline-title">Storico Punti</p>';
@@ -274,7 +262,7 @@
                 `;
             } catch (e) {
                 contentArea.innerHTML = `
-                    <div class="not-active-msg">Errore di rete/connessione.</div>
+                    <div class="not-active-msg">Errore di connessione.</div>
                     <div class="debug-error"><b>Dettaglio Errore:</b><br>${e.message || e}</div>
                 `;
             }
