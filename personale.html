@@ -41,7 +41,6 @@
             align-items: center;
         }
 
-        /* Stile del Logo Principale originale */
         .main-logo {
             height: 48px;
             width: auto;
@@ -156,7 +155,6 @@
             line-height: 1.5; 
         }
 
-        /* Sezione Pulsante posizionata in basso (sopra il footer) */
         .tuttocampo-section {
             max-width: 450px;
             margin: 10px auto 15px auto;
@@ -198,7 +196,6 @@
             object-fit: contain;
         }
 
-        /* Footer e Griglia Sponsor */
         .footer { 
             background-color: var(--verde-scuro); 
             color: white; 
@@ -255,7 +252,6 @@
         </div>
     </div>
 
-    <!-- Pulsante Risultati e Classifiche in basso (sopra il footer) -->
     <div class="tuttocampo-section">
         <a href="https://www.tuttocampo.it/Liguria/GE/TerzaCategoria/GironeBGenova/Risultati" target="_blank" class="btn-tuttocampo">
             <img src="/img/f-logo.png" alt="F">
@@ -277,7 +273,6 @@
     </div>
 
     <script>
-        // Inizializzazione Client Ufficiale Supabase
         const SUPABASE_URL = 'https://xyyvmobvcggbqracdkki.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eXZtb2J2Y2dnYnFyYWNka2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTU3MDYsImV4cCI6MjA5ODM5MTcwNn0.QpN5HQQxdz77w50e-OOd9GdnoX2B7y8d-4CYeNWyx2U';
         
@@ -295,7 +290,6 @@
                 const parsed = parseInt(tesseraParam, 10);
                 if (!isNaN(parsed)) return parsed;
             }
-            // Valore di default se nessun parametro è presente
             return 1;
         }
 
