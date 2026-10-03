@@ -156,13 +156,47 @@
             line-height: 1.5; 
         }
 
+        /* Sezione Pulsante Tuttocampo */
+        .tuttocampo-section {
+            max-width: 450px;
+            margin: 15px auto 0 auto;
+            width: 100%;
+            padding: 0 15px;
+        }
+
+        .btn-tuttocampo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background-color: var(--verde-scuro);
+            color: white;
+            text-decoration: none;
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0, 102, 51, 0.2);
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn-tuttocampo:hover {
+            background-color: #005228;
+        }
+
+        .btn-tuttocampo:active {
+            transform: scale(0.98);
+        }
+
         /* Footer e Griglia Sponsor */
         .footer { 
             background-color: var(--verde-scuro); 
             color: white; 
             text-align: center; 
             padding: 20px 15px; 
-            margin-top: auto; 
+            margin-top: 20px; 
         }
 
         .sponsor-container {
@@ -179,7 +213,6 @@
             overflow: hidden;
         }
 
-        /* Dimensione base per i loghi standard */
         .sponsor-logo {
             height: 35px;
             max-width: 90px;
@@ -189,7 +222,6 @@
             outline: none;
         }
 
-        /* Stile uniforme per K Service, La Terrazza e Pisacane */
         .sponsor-logo.sponsor-grande {
             height: 48px;
             max-width: 120px;
@@ -213,6 +245,13 @@
         <div class="card">
             <p style="color:#666; margin:0;">Caricamento profilo in corso...</p>
         </div>
+    </div>
+
+    <!-- Pulsante Tuttocampo inserito sopra il footer degli sponsor -->
+    <div class="tuttocampo-section">
+        <a href="https://www.tuttocampo.it/Liguria/GE/TerzaCategoria/GironeBGenova/Risultati" target="_blank" class="btn-tuttocampo">
+            📅 Risultati e Classifica su Tuttocampo
+        </a>
     </div>
 
     <div class="footer">
