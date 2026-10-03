@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -28,10 +28,6 @@
             padding: 20px 10px;
             background: white;
             border-bottom: 1px solid #eee;
-        }
-        .header img {
-            max-width: 200px;
-            height: auto;
         }
         .nav-buttons {
             display: flex;
@@ -66,7 +62,7 @@
         }
         .player-name {
             font-family: 'Anton', sans-serif;
-            font-size: 28px;
+            font-size: 32px;
             color: var(--testo-scuro);
             margin-bottom: 15px;
             text-transform: uppercase;
@@ -164,7 +160,11 @@
     <script>
         const SUPABASE_URL = 'https://fonitroikpynqxfuwyvy.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvbml0cm9pa3B5bnF4ZnV3eXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzMjQ5NTUsImV4cCI6MjA1NjkwMDk1NX0.2g6L6fE89JvY9tSjQ8K3E20n2J1G2H3I4K5L6M7N8O9';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        let _supabase;
+        if (window.supabase) {
+            _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
 
         function getNumeroTessera() {
             const pathParts = window.location.pathname.split('/').filter(p => p.length > 0);
@@ -172,29 +172,36 @@
                 return pathParts[1];
             }
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('tessera') || '1';
+            return urlParams.get('tessera') || '181';
         }
 
         async function caricaProfilo() {
-            const numTessera = getNumeroTessera();
+            const numTesseraStr = getNumeroTessera();
+            const numTesseraInt = parseInt(numTesseraStr, 10);
             const contentArea = document.getElementById('content-area');
+
+            if (!_supabase) {
+                contentArea.innerHTML = `<div class="not-active-msg">Errore caricamento libreria.</div>`;
+                return;
+            }
+
             try {
-                // Cerca la tessera sia confrontando come numero che come stringa di testo
+                // Cerca sia come numero intero che come stringa
                 let { data: tessere, error: errTessera } = await _supabase
                     .from('Tessere')
                     .select('*')
-                    .or(`numero_tessera.eq.${numTessera},numero_tessera.eq.'${numTessera}'`);
+                    .or(`numero_tessera.eq.${numTesseraInt},numero_tessera.eq.'${numTesseraStr}'`);
 
                 const tessera = (tessere && tessere.length > 0) ? tessere[0] : null;
 
                 if (errTessera || !tessera) {
-                    contentArea.innerHTML = `<div class="not-active-msg">Tessera #${numTessera} non trovata.</div>`;
+                    contentArea.innerHTML = `<div class="not-active-msg">Tessera #${numTesseraStr} non trovata.</div>`;
                     return;
                 }
 
                 if (!tessera.attiva) {
                     contentArea.innerHTML = `
-                        <div class="player-name">Tessera #${numTessera}</div>
+                        <div class="player-name">Tessera #${numTesseraStr}</div>
                         <div class="not-active-msg">Questa tessera non è ancora stata attivata.<br>Acquistala dallo staff per iniziare a giocare!</div>
                     `;
                     return;
@@ -205,11 +212,11 @@
                     const { data: dataCronologia } = await _supabase
                         .from('_punti cronologia')
                         .select('*')
-                        .or(`numero_tessera.eq.${numTessera},numero_tessera.eq.'${numTessera}'`)
+                        .or(`numero_tessera.eq.${numTesseraInt},numero_tessera.eq.'${numTesseraStr}'`)
                         .order('created_at', { ascending: false });
                     if (dataCronologia) cronologia = dataCronologia;
                 } catch (e) {
-                    // Ignora errori se la tabella cronologia non ha voci
+                    // Ignora se la cronologia è vuota
                 }
 
                 const fotoUrl = tessera.foto_url || 'https://via.placeholder.com/150/006633/FFFFFF?text=FantaFonta';
@@ -231,7 +238,7 @@
                 htmlCronologia += '</div>';
 
                 contentArea.innerHTML = `
-                    <div class="player-name">${tessera.nome_tifoso || 'Tifoso #' + numTessera}</div>
+                    <div class="player-name">${tessera.nome_tifoso || 'Tifoso #' + numTesseraStr}</div>
                     <div class="profile-data">
                         <img src="${fotoUrl}" class="player-photo" alt="Foto">
                         <div class="player-score">${tessera.punti || 0}<span>Pt.</span></div>
