@@ -5,134 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FantaFonta - Pagina Personale</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <!-- LIBRERIA UFFICIALE SUPABASE PER EVITARE BLOCCHI -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --verde-scuro: #006633;
-            --verde-chiaro: #008844;
-            --sfondo-chiaro: #ffffff;
-            --testo-scuro: #111111;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Montserrat', sans-serif;
-            background-color: var(--sfondo-chiaro);
-            color: var(--testo-scuro);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        .header {
-            text-align: center;
-            padding: 20px 10px;
-            background: white;
-            border-bottom: 1px solid #eee;
-        }
-        .nav-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            padding: 15px;
-            background: #f9f9f9;
-        }
-        .btn {
-            padding: 10px 20px;
-            border: 2px solid var(--verde-scuro);
-            background: white;
-            color: var(--verde-scuro);
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .btn.active {
-            background: var(--verde-scuro);
-            color: white;
-        }
-        .content {
-            flex: 1;
-            padding: 20px;
-            max-width: 500px;
-            margin: 0 auto;
-            width: 100%;
-            box-sizing: border-box;
-            text-align: center;
-        }
-        .player-name {
-            font-family: 'Anton', sans-serif;
-            font-size: 32px;
-            color: var(--testo-scuro);
-            margin-bottom: 15px;
-            text-transform: uppercase;
-        }
-        .profile-data {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        .player-photo {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid var(--verde-scuro);
-        }
-        .player-score {
-            font-family: 'Anton', sans-serif;
-            font-size: 48px;
-            color: var(--verde-scuro);
-        }
-        .player-score span {
-            font-size: 20px;
-            font-family: 'Montserrat', sans-serif;
-        }
-        .timeline-box {
-            background: #f4f4f4;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: left;
-        }
-        .timeline-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            border-bottom: 2px solid var(--verde-scuro);
-            padding-bottom: 5px;
-            color: var(--verde-scuro);
-        }
-        .timeline-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #ddd;
-            font-size: 14px;
-        }
-        .timeline-item:last-child {
-            border-bottom: none;
-        }
-        .points-plus { color: var(--verde-scuro); font-weight: bold; }
-        .points-minus { color: #cc0000; font-weight: bold; }
-        .not-active-msg {
-            font-size: 18px;
-            color: #666;
-            margin-top: 30px;
-            line-height: 1.5;
-        }
-        .footer {
-            background-color: var(--verde-scuro);
-            color: white;
-            text-align: center;
-            padding: 20px;
-            margin-top: auto;
-        }
-        .sponsor-box {
-            border: 1px solid rgba(255,255,255,0.4);
-            padding: 15px;
-            margin-top: 10px;
-            font-size: 12px;
-        }
+        :root { --verde-scuro: #006633; --sfondo-chiaro: #ffffff; --testo-scuro: #111111; }
+        body { margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; background-color: var(--sfondo-chiaro); color: var(--testo-scuro); display: flex; flex-direction: column; min-height: 100vh; }
+        .header { text-align: center; padding: 20px 10px; background: white; border-bottom: 1px solid #eee; }
+        .nav-buttons { display: flex; justify-content: center; gap: 10px; padding: 15px; background: #f9f9f9; }
+        .btn { padding: 10px 20px; border: 2px solid var(--verde-scuro); background: white; color: var(--verde-scuro); font-weight: bold; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 14px; }
+        .btn.active { background: var(--verde-scuro); color: white; }
+        .content { flex: 1; padding: 20px; max-width: 500px; margin: 0 auto; width: 100%; box-sizing: border-box; text-align: center; }
+        .player-name { font-family: 'Anton', sans-serif; font-size: 32px; color: var(--testo-scuro); margin-bottom: 15px; text-transform: uppercase; }
+        .player-score { font-family: 'Anton', sans-serif; font-size: 48px; color: var(--verde-scuro); }
+        .not-active-msg { font-size: 18px; color: #555; margin-top: 20px; line-height: 1.5; }
+        .footer { background-color: var(--verde-scuro); color: white; text-align: center; padding: 20px; margin-top: auto; }
     </style>
 </head>
 <body>
@@ -148,103 +34,75 @@
     </div>
 
     <div class="content" id="content-area">
-        <p>Caricamento dati in corso...</p>
+        <p>Caricamento profilo in corso...</p>
     </div>
 
     <div class="footer">
         <p style="margin:0; font-size:14px; font-style:italic;">Sponsor by</p>
-        <div class="sponsor-box">AREA DEDICATA LOGHI SPONSOR</div>
+        <div style="border:1px solid rgba(255,255,255,0.4); padding:15px; margin-top:10px; font-size:12px;">AREA DEDICATA LOGHI SPONSOR</div>
     </div>
 
     <script>
-        const BASE_URL = 'https://xyyvmobvcqgbqracdkki.supabase.co/rest/v1';
-        const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eXZtb2J2Y2dnYnFyYWNka2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTU3MDYsImV4cCI6MjA5ODM5MTcwNn0.QpN5HQQxdz77w50e-OOd9GdnoX2B7y8d-4CYeNWyx2U';
+        // Inizializzazione Client Ufficiale Supabase
+        const SUPABASE_URL = 'https://xyyvmobvcqgbqracdkki.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eXZtb2J2Y2dnYnFyYWNka2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTU3MDYsImV4cCI6MjA5ODM5MTcwNn0.QpN5HQQxdz77w50e-OOd9GdnoX2B7y8d-4CYeNWyx2U';
+        
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Estrae il numero di tessera dall'URL (es: /p/181 oppure ?tessera=181)
         function getNumeroTessera() {
             const pathParts = window.location.pathname.split('/').filter(p => p.length > 0);
             if (pathParts.length > 0 && pathParts[0] === 'p' && pathParts[1]) {
                 return pathParts[1];
             }
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('tessera') || '1'; // Default tessera 1 per test se vuoto
+            return urlParams.get('tessera') || '1';
         }
 
         async function caricaProfilo() {
-            const numTesseraStr = getNumeroTessera();
-            const numTesseraInt = parseInt(numTesseraStr, 10);
+            const numTessera = parseInt(getNumeroTessera(), 10);
             const contentArea = document.getElementById('content-area');
 
-            const headers = {
-                'apikey': API_KEY,
-                'Authorization': 'Bearer ' + API_KEY
-            };
-
             try {
-                // 1. Cerca la tessera nel DB per numero_tessera o per id
-                let res = await fetch(`${BASE_URL}/Tessere?numero_tessera=eq.${numTesseraInt}`, { headers });
-                let tessere = await res.json();
+                // Interroga la tabella Tessere tramite la libreria ufficiale
+                const { data, error } = await _supabase
+                    .from('Tessere')
+                    .select('*')
+                    .eq('numero_tessera', numTessera);
 
-                if (!Array.isArray(tessere) || tessere.length === 0) {
-                    res = await fetch(`${BASE_URL}/Tessere?id=eq.${numTesseraInt}`, { headers });
-                    tessere = await res.json();
-                }
-
-                const tessera = (Array.isArray(tessere) && tessere.length > 0) ? tessere[0] : null;
-
-                if (!tessera) {
-                    contentArea.innerHTML = `<div class="not-active-msg">Tessera #${numTesseraStr} non trovata nel sistema.</div>`;
+                if (error) {
+                    contentArea.innerHTML = `<p style="color:red;">Errore del database: ${error.message}</p>`;
                     return;
                 }
 
+                if (!data || data.length === 0) {
+                    contentArea.innerHTML = `<div class="not-active-msg">Tessera #${numTessera} non trovata.</div>`;
+                    return;
+                }
+
+                const tessera = data[0];
+
                 if (!tessera.attiva) {
                     contentArea.innerHTML = `
-                        <div class="player-name">Tessera #${numTesseraStr}</div>
+                        <div class="player-name">Tessera #${tessera.numero_tessera}</div>
                         <div class="not-active-msg">Questa tessera non è ancora stata attivata.<br>Acquistala dallo staff per iniziare a giocare!</div>
                     `;
                     return;
                 }
 
-                // 2. Recupera la cronologia punti (se presente)
-                let cronologia = [];
-                try {
-                    const resCrono = await fetch(`${BASE_URL}/_punti%20cronologia?numero_tessera=eq.${numTesseraInt}&order=created_at.desc`, { headers });
-                    if (resCrono.ok) {
-                        cronologia = await resCrono.json();
-                    }
-                } catch (e) {}
-
-                // Usa nome_tifoso se presente nel database, altrimenti fallback generico
-                const nomeMostrato = tessera.nome_tifoso || ('Tessera #' + (tessera.numero_tessera || tessera.id));
-                const fotoUrl = tessera.foto_url || 'https://via.placeholder.com/150/006633/FFFFFF?text=FantaFonta';
-
-                let htmlCronologia = '<div class="timeline-box"><p class="timeline-title">Storico Punti</p>';
-                if (Array.isArray(cronologia) && cronologia.length > 0) {
-                    cronologia.forEach(item => {
-                        const segno = item.punti_assegnati >= 0 ? '+' : '';
-                        const classePunti = item.punti_assegnati >= 0 ? 'points-plus' : 'points-minus';
-                        htmlCronologia += `
-                            <div class="timeline-item">
-                                <span>${item.descrizione || 'Bonus/Malus'}</span>
-                                <span class="${classePunti}">${segno}${item.punti_assegnati}pt</span>
-                            </div>
-                        `;
-                    });
-                } else {
-                    htmlCronologia += '<div class="timeline-item">Nessun punto assegnato finora.</div>';
-                }
-                htmlCronologia += '</div>';
+                const nome = tessera.nome_tifoso || `Tessera #${tessera.numero_tessera}`;
+                const punti = tessera.punti || 0;
+                const foto = tessera.foto_url || 'https://via.placeholder.com/150/006633/FFFFFF?text=FantaFonta';
 
                 contentArea.innerHTML = `
-                    <div class="player-name">${nomeMostrato}</div>
-                    <div class="profile-data">
-                        <img src="${fotoUrl}" class="player-photo" alt="Foto">
-                        <div class="player-score">${tessera.punti || 0}<span>Pt.</span></div>
+                    <div class="player-name">${nome}</div>
+                    <div style="margin:20px 0;">
+                        <img src="${foto}" alt="Foto Profilo" style="width:140px; height:140px; border-radius:50%; border:4px solid #006633; object-fit:cover;">
+                        <div class="player-score" style="margin-top:15px;">${punti} <span style="font-size:24px;">Pt.</span></div>
                     </div>
-                    ${htmlCronologia}
                 `;
+
             } catch (err) {
-                contentArea.innerHTML = `<div class="not-active-msg">Errore lettura dati dal server.</div>`;
+                contentArea.innerHTML = `<p style="color:red;">Errore generico: ${err.message}</p>`;
             }
         }
 
