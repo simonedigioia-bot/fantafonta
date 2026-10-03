@@ -4,42 +4,176 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FantaFonta - Pagina Personale</title>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <!-- LIBRERIA UFFICIALE SUPABASE PER EVITARE BLOCCHI -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- LIBRERIA UFFICIALE SUPABASE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --verde-scuro: #006633; --sfondo-chiaro: #ffffff; --testo-scuro: #111111; }
-        body { margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; background-color: var(--sfondo-chiaro); color: var(--testo-scuro); display: flex; flex-direction: column; min-height: 100vh; }
-        .header { text-align: center; padding: 20px 10px; background: white; border-bottom: 1px solid #eee; }
-        .nav-buttons { display: flex; justify-content: center; gap: 10px; padding: 15px; background: #f9f9f9; }
-        .btn { padding: 10px 20px; border: 2px solid var(--verde-scuro); background: white; color: var(--verde-scuro); font-weight: bold; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 14px; }
-        .btn.active { background: var(--verde-scuro); color: white; }
-        .content { flex: 1; padding: 20px; max-width: 500px; margin: 0 auto; width: 100%; box-sizing: border-box; text-align: center; }
-        .player-name { font-family: 'Anton', sans-serif; font-size: 32px; color: var(--testo-scuro); margin-bottom: 15px; text-transform: uppercase; }
-        .player-score { font-family: 'Anton', sans-serif; font-size: 52px; color: var(--verde-scuro); }
-        .not-active-msg { font-size: 18px; color: #555; margin-top: 20px; line-height: 1.5; }
-        .footer { background-color: var(--verde-scuro); color: white; text-align: center; padding: 20px; margin-top: auto; }
+        :root { 
+            --verde-scuro: #006633; 
+            --verde-chiaro: #e6f0eb;
+            --sfondo-chiaro: #f4f6f8; 
+            --testo-scuro: #111111; 
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--sfondo-chiaro); 
+            color: var(--testo-scuro); 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+        }
+
+        .header { 
+            text-align: center; 
+            padding: 18px 10px; 
+            background: white; 
+            border-bottom: 1px solid #e5e5e5; 
+        }
+
+        .nav-buttons { 
+            display: flex; 
+            justify-content: center; 
+            gap: 8px; 
+            padding: 12px; 
+            background: #ffffff; 
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .btn { 
+            flex: 1;
+            max-width: 120px;
+            text-align: center;
+            padding: 10px 4px; 
+            border: 2px solid var(--verde-scuro); 
+            background: white; 
+            color: var(--verde-scuro); 
+            font-weight: 700; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            text-decoration: none; 
+            font-size: 13px; 
+        }
+
+        .btn.active { 
+            background: var(--verde-scuro); 
+            color: white; 
+        }
+
+        .content { 
+            flex: 1; 
+            padding: 30px 15px; 
+            max-width: 450px; 
+            margin: 0 auto; 
+            width: 100%; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eaeaea;
+            text-align: center;
+        }
+
+        .badge-tessera {
+            display: inline-block;
+            background: var(--verde-chiaro);
+            color: var(--verde-scuro);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .player-name { 
+            font-family: 'Anton', sans-serif; 
+            font-size: 30px; 
+            color: var(--testo-scuro); 
+            margin: 0 0 20px 0; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+
+        .score-box {
+            background: #f8faf9;
+            border: 2px dashed var(--verde-scuro);
+            border-radius: 12px;
+            padding: 20px 15px;
+            margin-top: 10px;
+        }
+
+        .score-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #666;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .player-score { 
+            font-family: 'Anton', sans-serif; 
+            font-size: 58px; 
+            color: var(--verde-scuro); 
+            line-height: 1;
+        }
+
+        .player-score span {
+            font-size: 24px;
+        }
+
+        .not-active-msg { 
+            font-size: 16px; 
+            color: #555; 
+            line-height: 1.5; 
+        }
+
+        .footer { 
+            background-color: var(--verde-scuro); 
+            color: white; 
+            text-align: center; 
+            padding: 20px; 
+            margin-top: auto; 
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1 style="font-family:'Anton'; color:var(--verde-scuro); margin:0;">FANTA<i>FONTA</i></h1>
+        <h1 style="font-family:'Anton'; color:var(--verde-scuro); margin:0; font-size:32px;">FANTA<i>FONTA</i></h1>
     </div>
 
     <div class="nav-buttons">
-        <a href="/" class="btn">Classifica</a>
-        <a href="#" class="btn">Regolamento</a>
+        <a href="index.html" class="btn">Classifica</a>
+        <a href="regolamento.html" class="btn">Regolamento</a>
         <a href="#" class="btn active">Personale</a>
     </div>
 
     <div class="content" id="content-area">
-        <p>Caricamento profilo in corso...</p>
+        <div class="card">
+            <p style="color:#666; margin:0;">Caricamento profilo in corso...</p>
+        </div>
     </div>
 
     <div class="footer">
         <p style="margin:0; font-size:14px; font-style:italic;">Sponsor by</p>
-        <div style="border:1px solid rgba(255,255,255,0.4); padding:15px; margin-top:10px; font-size:12px;">AREA DEDICATA LOGHI SPONSOR</div>
+        <div style="border:1px solid rgba(255,255,255,0.4); padding:15px; margin-top:10px; font-size:12px; border-radius:6px;">AREA DEDICATA LOGHI SPONSOR</div>
     </div>
 
     <script>
@@ -63,19 +197,25 @@
             const contentArea = document.getElementById('content-area');
 
             try {
-                // Interroga la tabella Tessere tramite la libreria ufficiale
                 const { data, error } = await _supabase
                     .from('Tessere')
                     .select('*')
                     .eq('numero_tessera', numTessera);
 
                 if (error) {
-                    contentArea.innerHTML = `<p style="color:red;">Errore del database: ${error.message}</p>`;
+                    contentArea.innerHTML = `
+                        <div class="card">
+                            <p style="color:red; margin:0;">Errore del database: ${error.message}</p>
+                        </div>`;
                     return;
                 }
 
                 if (!data || data.length === 0) {
-                    contentArea.innerHTML = `<div class="not-active-msg">Tessera #${numTessera} non trovata.</div>`;
+                    contentArea.innerHTML = `
+                        <div class="card">
+                            <div class="badge-tessera">Tessera #${numTessera}</div>
+                            <div class="not-active-msg">Tessera non trovata.</div>
+                        </div>`;
                     return;
                 }
 
@@ -83,25 +223,32 @@
 
                 if (!tessera.attiva) {
                     contentArea.innerHTML = `
-                        <div class="player-name">Tessera #${tessera.numero_tessera}</div>
-                        <div class="not-active-msg">Questa tessera non è ancora stata attivata.<br>Acquistala dallo staff per iniziare a giocare!</div>
-                    `;
+                        <div class="card">
+                            <div class="badge-tessera">Tessera #${tessera.numero_tessera}</div>
+                            <div class="not-active-msg">Questa tessera non è ancora stata attivata.<br>Acquistala dallo staff per iniziare a giocare!</div>
+                        </div>`;
                     return;
                 }
 
-                const nome = tessera.nome_tifoso || `Tessera #${tessera.numero_tessera}`;
-                const punti = tessera.punti || 0;
+                const nome = tessera.nome_tifoso || `TESSERA #${tessera.numero_tessera}`;
+                const punti = (tessera.punti !== undefined && tessera.punti !== null) ? tessera.punti : 0;
 
-                // Visualizzazione pulita senza foto profilo
                 contentArea.innerHTML = `
-                    <div class="player-name">${nome}</div>
-                    <div style="margin:40px 0;">
-                        <div class="player-score">${punti} <span style="font-size:26px;">Pt.</span></div>
+                    <div class="card">
+                        <div class="badge-tessera">TESSERA #${tessera.numero_tessera}</div>
+                        <div class="player-name">${nome}</div>
+                        <div class="score-box">
+                            <div class="score-label">Punti Totali</div>
+                            <div class="player-score">${punti} <span>Pt.</span></div>
+                        </div>
                     </div>
                 `;
 
             } catch (err) {
-                contentArea.innerHTML = `<p style="color:red;">Errore generico: ${err.message}</p>`;
+                contentArea.innerHTML = `
+                    <div class="card">
+                        <p style="color:red; margin:0;">Errore generico: ${err.message}</p>
+                    </div>`;
             }
         }
 
