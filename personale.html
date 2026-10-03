@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -168,8 +168,8 @@
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://fonitroikpynqxfuwyvy.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvbml0cm9pa3B5bnF4ZnV3eXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzMjQ5NTUsImV4cCI6MjA1NjkwMDk1NX0.2g6L6fE89JvY9tSjQ8K3E20n2J1G2H3I4K5L6M7N8O9';
+        const SUPABASE_URL = 'https://xyyvmobvcqgbqracdkki.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_AuD-8UcUGqNI4UygtYSRDA_wa7mVH4f';
         
         let _supabase;
         if (window.supabase) {
@@ -196,7 +196,6 @@
             }
 
             try {
-                // Cerchiamo prima per numero_tessera, se non trova cerchiamo per id
                 let { data: tessere, error: errTessera } = await _supabase
                     .from('Tessere')
                     .select('*')
@@ -214,8 +213,8 @@
 
                 if (errTessera) {
                     contentArea.innerHTML = `
-                        <div class="not-active-msg">Errore di lettura.</div>
-                        <div class="debug-error"><b>Errore:</b> ${errTessera.message}</div>
+                        <div class="not-active-msg">Errore durante la lettura dati.</div>
+                        <div class="debug-error"><b>Dettaglio Errore Supabase:</b><br>${errTessera.message}</div>
                     `;
                     return;
                 }
@@ -235,7 +234,6 @@
                     return;
                 }
 
-                // Recupero cronologia punti per la singola tessera
                 let cronologia = [];
                 try {
                     const { data: dataCronologia } = await _supabase
@@ -275,7 +273,10 @@
                     ${htmlCronologia}
                 `;
             } catch (e) {
-                contentArea.innerHTML = `<div class="not-active-msg">Errore generico: ${e.message}</div>`;
+                contentArea.innerHTML = `
+                    <div class="not-active-msg">Errore di rete/connessione.</div>
+                    <div class="debug-error"><b>Dettaglio Errore:</b><br>${e.message || e}</div>
+                `;
             }
         }
 
