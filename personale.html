@@ -16,7 +16,7 @@
         .btn.active { background: var(--verde-scuro); color: white; }
         .content { flex: 1; padding: 20px; max-width: 500px; margin: 0 auto; width: 100%; box-sizing: border-box; text-align: center; }
         .player-name { font-family: 'Anton', sans-serif; font-size: 32px; color: var(--testo-scuro); margin-bottom: 15px; text-transform: uppercase; }
-        .player-score { font-family: 'Anton', sans-serif; font-size: 48px; color: var(--verde-scuro); }
+        .player-score { font-family: 'Anton', sans-serif; font-size: 52px; color: var(--verde-scuro); }
         .not-active-msg { font-size: 18px; color: #555; margin-top: 20px; line-height: 1.5; }
         .footer { background-color: var(--verde-scuro); color: white; text-align: center; padding: 20px; margin-top: auto; }
     </style>
@@ -43,7 +43,7 @@
     </div>
 
     <script>
-        // Inizializzazione Client Ufficiale Supabase (URL CORRETTO)
+        // Inizializzazione Client Ufficiale Supabase
         const SUPABASE_URL = 'https://xyyvmobvcggbqracdkki.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eXZtb2J2Y2dnYnFyYWNka2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTU3MDYsImV4cCI6MjA5ODM5MTcwNn0.QpN5HQQxdz77w50e-OOd9GdnoX2B7y8d-4CYeNWyx2U';
         
@@ -91,13 +91,12 @@
 
                 const nome = tessera.nome_tifoso || `Tessera #${tessera.numero_tessera}`;
                 const punti = tessera.punti || 0;
-                const foto = tessera.foto_url || 'https://via.placeholder.com/150/006633/FFFFFF?text=FantaFonta';
 
+                // Visualizzazione pulita senza foto profilo
                 contentArea.innerHTML = `
                     <div class="player-name">${nome}</div>
-                    <div style="margin:20px 0;">
-                        <img src="${foto}" alt="Foto Profilo" style="width:140px; height:140px; border-radius:50%; border:4px solid #006633; object-fit:cover;">
-                        <div class="player-score" style="margin-top:15px;">${punti} <span style="font-size:24px;">Pt.</span></div>
+                    <div style="margin:40px 0;">
+                        <div class="player-score">${punti} <span style="font-size:26px;">Pt.</span></div>
                     </div>
                 `;
 
