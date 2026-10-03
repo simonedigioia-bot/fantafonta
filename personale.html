@@ -120,16 +120,6 @@
             margin-top: 30px;
             line-height: 1.5;
         }
-        .debug-error {
-            background: #ffe6e6;
-            color: #cc0000;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 13px;
-            text-align: left;
-            margin-top: 15px;
-            word-break: break-all;
-        }
         .footer {
             background-color: var(--verde-scuro);
             color: white;
@@ -158,7 +148,7 @@
     </div>
 
     <div class="content" id="content-area">
-        <p>Caricamento dati...</p>
+        <p>Caricamento dati in corso...</p>
     </div>
 
     <div class="footer">
@@ -170,19 +160,14 @@
         const BASE_URL = 'https://xyyvmobvcqgbqracdkki.supabase.co/rest/v1';
         const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eXZtb2J2Y2dnYnFyYWNka2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTU3MDYsImV4cCI6MjA5ODM5MTcwNn0.QpN5HQQxdz77w50e-OOd9GdnoX2B7y8d-4CYeNWyx2U';
 
-        const headers = {
-            'apikey': API_KEY,
-            'Authorization': 'Bearer ' + API_KEY,
-            'Content-Type': 'application/json'
-        };
-
+        // Estrae il numero di tessera dall'URL (es: /p/181 oppure ?tessera=181)
         function getNumeroTessera() {
             const pathParts = window.location.pathname.split('/').filter(p => p.length > 0);
             if (pathParts.length > 0 && pathParts[0] === 'p' && pathParts[1]) {
                 return pathParts[1];
             }
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('tessera') || '181';
+            return urlParams.get('tessera') || '1'; // Default tessera 1 per test se vuoto
         }
 
         async function caricaProfilo() {
@@ -190,29 +175,25 @@
             const numTesseraInt = parseInt(numTesseraStr, 10);
             const contentArea = document.getElementById('content-area');
 
+            const headers = {
+                'apikey': API_KEY,
+                'Authorization': 'Bearer ' + API_KEY
+            };
+
             try {
-                // 1. Cerca prima per numero_tessera
+                // 1. Cerca la tessera nel DB per numero_tessera o per id
                 let res = await fetch(`${BASE_URL}/Tessere?numero_tessera=eq.${numTesseraInt}`, { headers });
                 let tessere = await res.json();
 
-                // 2. Se non trova nulla, cerca per id
                 if (!Array.isArray(tessere) || tessere.length === 0) {
                     res = await fetch(`${BASE_URL}/Tessere?id=eq.${numTesseraInt}`, { headers });
                     tessere = await res.json();
                 }
 
-                if (!res.ok) {
-                    contentArea.innerHTML = `
-                        <div class="not-active-msg">Errore lettura dati.</div>
-                        <div class="debug-error"><b>Status:</b> ${res.status} ${res.statusText}</div>
-                    `;
-                    return;
-                }
-
                 const tessera = (Array.isArray(tessere) && tessere.length > 0) ? tessere[0] : null;
 
                 if (!tessera) {
-                    contentArea.innerHTML = `<div class="not-active-msg">Tessera #${numTesseraStr} non trovata.</div>`;
+                    contentArea.innerHTML = `<div class="not-active-msg">Tessera #${numTesseraStr} non trovata nel sistema.</div>`;
                     return;
                 }
 
@@ -224,7 +205,7 @@
                     return;
                 }
 
-                // 3. Recupera la cronologia punti
+                // 2. Recupera la cronologia punti (se presente)
                 let cronologia = [];
                 try {
                     const resCrono = await fetch(`${BASE_URL}/_punti%20cronologia?numero_tessera=eq.${numTesseraInt}&order=created_at.desc`, { headers });
@@ -233,9 +214,11 @@
                     }
                 } catch (e) {}
 
+                // Usa nome_tifoso se presente nel database, altrimenti fallback generico
+                const nomeMostrato = tessera.nome_tifoso || ('Tessera #' + (tessera.numero_tessera || tessera.id));
                 const fotoUrl = tessera.foto_url || 'https://via.placeholder.com/150/006633/FFFFFF?text=FantaFonta';
+
                 let htmlCronologia = '<div class="timeline-box"><p class="timeline-title">Storico Punti</p>';
-                
                 if (Array.isArray(cronologia) && cronologia.length > 0) {
                     cronologia.forEach(item => {
                         const segno = item.punti_assegnati >= 0 ? '+' : '';
@@ -253,18 +236,15 @@
                 htmlCronologia += '</div>';
 
                 contentArea.innerHTML = `
-                    <div class="player-name">${tessera.nome_tifoso || 'Tifoso #' + numTesseraStr}</div>
+                    <div class="player-name">${nomeMostrato}</div>
                     <div class="profile-data">
                         <img src="${fotoUrl}" class="player-photo" alt="Foto">
                         <div class="player-score">${tessera.punti || 0}<span>Pt.</span></div>
                     </div>
                     ${htmlCronologia}
                 `;
-            } catch (e) {
-                contentArea.innerHTML = `
-                    <div class="not-active-msg">Errore di rete/connessione.</div>
-                    <div class="debug-error"><b>Dettaglio:</b> ${e.message || e}<br><br><i>Nota: Se usavi AdBlock o Brave, prova a disattivarlo temporaneamente per verificare la connessione a Supabase.</i></div>
-                `;
+            } catch (err) {
+                contentArea.innerHTML = `<div class="not-active-msg">Errore lettura dati dal server.</div>`;
             }
         }
 
