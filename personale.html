@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FantaFonta - Pagina Personale</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --verde-scuro: #006633;
@@ -168,13 +167,14 @@
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://xyyvmobvcqgbqracdkki.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eXZtb2J2Y2dnYnFyYWNka2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTU3MDYsImV4cCI6MjA5ODM5MTcwNn0.QpN5HQQxdz77w50e-OOd9GdnoX2B7y8d-4CYeNWyx2U';
+        const BASE_URL = 'https://xyyvmobvcqgbqracdkki.supabase.co/rest/v1';
+        const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eXZtb2J2Y2dnYnFyYWNka2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTU3MDYsImV4cCI6MjA5ODM5MTcwNn0.QpN5HQQxdz77w50e-OOd9GdnoX2B7y8d-4CYeNWyx2U';
 
-        let _supabase;
-        if (window.supabase) {
-            _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        }
+        const headers = {
+            'apikey': API_KEY,
+            'Authorization': 'Bearer ' + API_KEY,
+            'Content-Type': 'application/json'
+        };
 
         function getNumeroTessera() {
             const pathParts = window.location.pathname.split('/').filter(p => p.length > 0);
@@ -190,26 +190,26 @@
             const numTesseraInt = parseInt(numTesseraStr, 10);
             const contentArea = document.getElementById('content-area');
 
-            if (!_supabase) {
-                contentArea.innerHTML = `<div class="not-active-msg">Errore: Libreria Supabase non caricata.</div>`;
-                return;
-            }
-
             try {
-                const { data: tessere, error: errTessera } = await _supabase
-                    .from('Tessere')
-                    .select('*')
-                    .or(`numero_tessera.eq.${numTesseraInt},id.eq.${numTesseraInt}`);
+                // 1. Cerca prima per numero_tessera
+                let res = await fetch(`${BASE_URL}/Tessere?numero_tessera=eq.${numTesseraInt}`, { headers });
+                let tessere = await res.json();
 
-                if (errTessera) {
+                // 2. Se non trova nulla, cerca per id
+                if (!Array.isArray(tessere) || tessere.length === 0) {
+                    res = await fetch(`${BASE_URL}/Tessere?id=eq.${numTesseraInt}`, { headers });
+                    tessere = await res.json();
+                }
+
+                if (!res.ok) {
                     contentArea.innerHTML = `
                         <div class="not-active-msg">Errore lettura dati.</div>
-                        <div class="debug-error"><b>Errore Supabase:</b> ${errTessera.message}</div>
+                        <div class="debug-error"><b>Status:</b> ${res.status} ${res.statusText}</div>
                     `;
                     return;
                 }
 
-                const tessera = (tessere && tessere.length > 0) ? tessere[0] : null;
+                const tessera = (Array.isArray(tessere) && tessere.length > 0) ? tessere[0] : null;
 
                 if (!tessera) {
                     contentArea.innerHTML = `<div class="not-active-msg">Tessera #${numTesseraStr} non trovata.</div>`;
@@ -224,19 +224,19 @@
                     return;
                 }
 
+                // 3. Recupera la cronologia punti
                 let cronologia = [];
                 try {
-                    const { data: dataCronologia } = await _supabase
-                        .from('_punti cronologia')
-                        .select('*')
-                        .eq('numero_tessera', numTesseraInt)
-                        .order('created_at', { ascending: false });
-                    if (dataCronologia) cronologia = dataCronologia;
+                    const resCrono = await fetch(`${BASE_URL}/_punti%20cronologia?numero_tessera=eq.${numTesseraInt}&order=created_at.desc`, { headers });
+                    if (resCrono.ok) {
+                        cronologia = await resCrono.json();
+                    }
                 } catch (e) {}
 
                 const fotoUrl = tessera.foto_url || 'https://via.placeholder.com/150/006633/FFFFFF?text=FantaFonta';
                 let htmlCronologia = '<div class="timeline-box"><p class="timeline-title">Storico Punti</p>';
-                if (cronologia && cronologia.length > 0) {
+                
+                if (Array.isArray(cronologia) && cronologia.length > 0) {
                     cronologia.forEach(item => {
                         const segno = item.punti_assegnati >= 0 ? '+' : '';
                         const classePunti = item.punti_assegnati >= 0 ? 'points-plus' : 'points-minus';
@@ -262,8 +262,8 @@
                 `;
             } catch (e) {
                 contentArea.innerHTML = `
-                    <div class="not-active-msg">Errore di connessione.</div>
-                    <div class="debug-error"><b>Dettaglio Errore:</b><br>${e.message || e}</div>
+                    <div class="not-active-msg">Errore di rete/connessione.</div>
+                    <div class="debug-error"><b>Dettaglio:</b> ${e.message || e}<br><br><i>Nota: Se usavi AdBlock o Brave, prova a disattivarlo temporaneamente per verificare la connessione a Supabase.</i></div>
                 `;
             }
         }
