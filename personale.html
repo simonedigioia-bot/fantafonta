@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -121,6 +121,16 @@
             margin-top: 30px;
             line-height: 1.5;
         }
+        .debug-error {
+            background: #ffe6e6;
+            color: #cc0000;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: left;
+            margin-top: 15px;
+            word-break: break-all;
+        }
         .footer {
             background-color: var(--verde-scuro);
             color: white;
@@ -177,24 +187,34 @@
 
         async function caricaProfilo() {
             const numTesseraStr = getNumeroTessera();
-            const numTesseraInt = parseInt(numTesseraStr, 10);
             const contentArea = document.getElementById('content-area');
 
             if (!_supabase) {
-                contentArea.innerHTML = `<div class="not-active-msg">Errore caricamento libreria.</div>`;
+                contentArea.innerHTML = `<div class="not-active-msg">Errore: Libreria Supabase non caricata.</div>`;
                 return;
             }
 
             try {
-                // Cerca sia come numero intero che come stringa
+                // Legge TUTTI i record senza filtri complessi per evitare blocchi della query
                 let { data: tessere, error: errTessera } = await _supabase
                     .from('Tessere')
-                    .select('*')
-                    .or(`numero_tessera.eq.${numTesseraInt},numero_tessera.eq.'${numTesseraStr}'`);
+                    .select('*');
 
-                const tessera = (tessere && tessere.length > 0) ? tessere[0] : null;
+                if (errTessera) {
+                    contentArea.innerHTML = `
+                        <div class="not-active-msg">Errore durante la ricerca.</div>
+                        <div class="debug-error"><b>Dettaglio Errore Supabase:</b><br>${errTessera.message || JSON.stringify(errTessera)}</div>
+                    `;
+                    return;
+                }
 
-                if (errTessera || !tessera) {
+                // Cerca la tessera nell'elenco confrontando id o numero_tessera
+                const tessera = tessere ? tessere.find(t => 
+                    String(t.numero_tessera) === String(numTesseraStr) || 
+                    String(t.id) === String(numTesseraStr)
+                ) : null;
+
+                if (!tessera) {
                     contentArea.innerHTML = `<div class="not-active-msg">Tessera #${numTesseraStr} non trovata.</div>`;
                     return;
                 }
@@ -207,16 +227,20 @@
                     return;
                 }
 
+                // Recupero cronologia punti
                 let cronologia = [];
                 try {
                     const { data: dataCronologia } = await _supabase
                         .from('_punti cronologia')
-                        .select('*')
-                        .or(`numero_tessera.eq.${numTesseraInt},numero_tessera.eq.'${numTesseraStr}'`)
-                        .order('created_at', { ascending: false });
-                    if (dataCronologia) cronologia = dataCronologia;
+                        .select('*');
+                    if (dataCronologia) {
+                        cronologia = dataCronologia.filter(c => 
+                            String(c.numero_tessera) === String(numTesseraStr) || 
+                            String(c.tessera_id) === String(numTesseraStr)
+                        );
+                    }
                 } catch (e) {
-                    // Ignora se la cronologia è vuota
+                    // Ignora errori di cronologia
                 }
 
                 const fotoUrl = tessera.foto_url || 'https://via.placeholder.com/150/006633/FFFFFF?text=FantaFonta';
@@ -246,7 +270,7 @@
                     ${htmlCronologia}
                 `;
             } catch (e) {
-                contentArea.innerHTML = `<div class="not-active-msg">Errore di connessione al server.</div>`;
+                contentArea.innerHTML = `<div class="not-active-msg">Errore generico: ${e.message}</div>`;
             }
         }
 
