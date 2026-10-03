@@ -171,27 +171,24 @@
             gap: 15px;
             flex-wrap: wrap;
             margin-top: 12px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             padding: 15px 10px;
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.25);
         }
 
         .sponsor-logo {
-            max-height: 38px;
+            height: 38px;
             max-width: 90px;
             object-fit: contain;
-            /* Uniforma i loghi rendendoli bianchi sullo sfondo verde. 
-               Se preferisci i loghi con i loro colori originali, cancella la riga 'filter' qui sotto */
-            filter: brightness(0) invert(1);
-            opacity: 0.9;
+            display: inline-block;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <img src="img/logo-fantafonta.png" alt="FantaFonta" class="main-logo" onerror="this.style.display='none'; document.getElementById('text-logo').style.display='block';">
+        <img src="/img/logo-fantafonta.png" alt="FantaFonta" class="main-logo" onerror="if(this.src!='/img/logo-fantafonta.png') this.src='/img/logo-fantafonta.png'; else { this.style.display='none'; document.getElementById('text-logo').style.display='block'; }">
         <h1 id="text-logo" style="font-family:'Anton'; color:var(--verde-scuro); margin:0; font-size:32px; display:none;">FANTA<i>FONTA</i></h1>
     </div>
 
@@ -210,13 +207,13 @@
     <div class="footer">
         <p style="margin:0; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.85;">Sponsor Ufficiali</p>
         <div class="sponsor-container">
-            <img src="img/sponsor1.png" alt="Sponsor 1" class="sponsor-logo" onerror="this.style.display='none'">
-            <img src="img/sponsor2.png" alt="Sponsor 2" class="sponsor-logo" onerror="this.style.display='none'">
-            <img src="img/sponsor3.png" alt="Sponsor 3" class="sponsor-logo" onerror="this.style.display='none'">
-            <img src="img/sponsor4.png" alt="Sponsor 4" class="sponsor-logo" onerror="this.style.display='none'">
-            <img src="img/sponsor5.png" alt="Sponsor 5" class="sponsor-logo" onerror="this.style.display='none'">
-            <img src="img/sponsor6.png" alt="Sponsor 6" class="sponsor-logo" onerror="this.style.display='none'">
-            <img src="img/sponsor7.png" alt="Sponsor 7" class="sponsor-logo" onerror="this.style.display='none'">
+            <img src="/img/sponsor1.png" alt="Sponsor 1" class="sponsor-logo">
+            <img src="/img/sponsor2.png" alt="Sponsor 2" class="sponsor-logo">
+            <img src="/img/sponsor3.png" alt="Sponsor 3" class="sponsor-logo">
+            <img src="/img/sponsor4.png" alt="Sponsor 4" class="sponsor-logo">
+            <img src="/img/sponsor5.png" alt="Sponsor 5" class="sponsor-logo">
+            <img src="/img/sponsor6.png" alt="Sponsor 6" class="sponsor-logo">
+            <img src="/img/sponsor7.png" alt="Sponsor 7" class="sponsor-logo">
         </div>
     </div>
 
