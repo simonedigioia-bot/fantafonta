@@ -7,32 +7,46 @@
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --verde-scuro: #006633; --verde-chiaro: #008844; --sfondo-grigio: #f0f0f0; }
-        body { margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; background-color: var(--sfondo-grigio); color: #333; display: flex; flex-direction: column; min-height: 100vh; }
-        .header { text-align: center; padding: 20px 10px; background: white; }
+        :root { 
+            --verde-scuro: #006633; 
+            --verde-chiaro: #008844; 
+            --sfondo-chiaro: #ffffff; 
+            --testo-scuro: #111111;
+        }
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--sfondo-chiaro); 
+            color: var(--testo-scuro); 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 100vh; 
+        }
+        .header { text-align: center; padding: 20px 10px; background: white; border-bottom: 1px solid #eee; }
         .logo { font-family: 'Anton', sans-serif; font-size: 2.5rem; color: var(--verde-scuro); text-transform: uppercase; letter-spacing: 2px; margin: 0; }
         .logo span { font-style: italic; color: var(--verde-chiaro); }
-        .nav-container { display: flex; flex-direction: column; gap: 10px; align-items: center; padding: 10px; background: white; }
+        .nav-container { display: flex; flex-direction: column; gap: 10px; align-items: center; padding: 15px 10px; background: white; }
         .btn-main { width: 90%; max-width: 350px; padding: 12px; border: 2px solid var(--verde-scuro); border-radius: 8px; background: white; color: var(--verde-scuro); font-weight: bold; font-size: 1.1rem; text-align: center; text-decoration: none; }
         .nav-row { display: flex; width: 90%; max-width: 350px; gap: 10px; }
         .btn-sub { flex: 1; padding: 10px; border: 2px solid var(--verde-scuro); border-radius: 8px; background: white; color: var(--verde-scuro); font-weight: bold; text-align: center; text-decoration: none; }
         .btn-active { background: var(--verde-scuro) !important; color: white !important; }
         .profile-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; text-align: center; }
-        .player-name { font-size: 1.8rem; color: var(--verde-scuro); font-weight: bold; margin-bottom: 20px; font-style: italic; }
+        .player-name { font-size: 2rem; color: var(--verde-scuro); font-weight: bold; margin-bottom: 20px; font-style: italic; }
         .profile-data { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 30px; width: 100%; max-width: 400px; }
-        .player-photo { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; background: #ccc; border: 3px solid white; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .player-photo { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; background: #e0e0e0; border: 3px solid var(--verde-scuro); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .player-score { font-family: 'Anton', sans-serif; font-size: 3.5rem; color: var(--verde-scuro); }
         .player-score span { font-size: 1.5rem; font-family: 'Montserrat', sans-serif; font-weight: bold; margin-left: 5px; }
-        .timeline-box { width: 100%; max-width: 350px; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); text-align: left; }
-        .timeline-title { font-weight: bold; color: var(--verde-scuro); margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid var(--sfondo-grigio); padding-bottom: 5px; }
-        .timeline-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; }
+        .timeline-box { width: 100%; max-width: 350px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 12px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); text-align: left; }
+        .timeline-title { font-weight: bold; color: var(--verde-scuro); margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #ddd; padding-bottom: 5px; }
+        .timeline-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.95rem; color: #222; }
         .points-plus { color: #00aa44; font-weight: bold; }
         .points-minus { color: #ff3333; font-weight: bold; }
         .sponsor-section { background: var(--verde-scuro); color: white; text-align: center; padding: 20px 10px; margin-top: auto; }
         .sponsor-title { font-style: italic; font-size: 1.2rem; margin-bottom: 15px; }
         .sponsor-box { border: 1px solid white; padding: 20px; max-width: 350px; margin: 0 auto; background: rgba(0,0,0,0.1); }
-        .not-active-msg { font-size: 1.2rem; color: #666; margin: 40px; font-weight: bold; }
-        .loader { margin: 40px; font-size: 1.1rem; color: var(--verde-scuro); }
+        .not-active-msg { font-size: 1.2rem; color: #444; margin: 40px; font-weight: bold; }
+        .loader { margin: 40px; font-size: 1.1rem; color: var(--verde-scuro); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -59,8 +73,8 @@
 
         function getNumeroTessera() {
             const path = window.location.pathname;
-            const segments = path.split('/');
-            const lastSegment = segments[segments.length - 1] || segments[segments.length - 2];
+            const segments = path.split('/').filter(Boolean);
+            const lastSegment = segments[segments.length - 1];
             const numero = parseInt(lastSegment);
             return isNaN(numero) ? 1 : numero;
         }
@@ -73,10 +87,10 @@
                     .from('Tessere')
                     .select('*')
                     .eq('numero_tessera', numTessera)
-                    .single();
+                    .maybeSingle();
 
                 if (errTessera || !tessera) {
-                    contentArea.innerHTML = `<div class="not-active-msg">Errore nel caricamento della tessera #${numTessera}.</div>`;
+                    contentArea.innerHTML = `<div class="not-active-msg">Tessera #${numTessera} non trovata.</div>`;
                     return;
                 }
                 if (!tessera.attiva) {
@@ -87,13 +101,20 @@
                     return;
                 }
 
-                const { data: cronologia } = await _supabase
-                    .from('cronologia_punti')
-                    .select('*')
-                    .eq('tessera_id', tessera.id)
-                    .order('data_assegnazione', { ascending: false });
+                // Tentativo recupero cronologia punti
+                let cronologia = [];
+                try {
+                    const { data: dataCronologia } = await _supabase
+                        .from('_punti cronologia')
+                        .select('*')
+                        .eq('numero_tessera', numTessera)
+                        .order('created_at', { ascending: false });
+                    if (dataCronologia) cronologia = dataCronologia;
+                } catch (e) {
+                    // Se la tabella cronologia non esiste, proseguiamo comunque mostrano i dati base
+                }
 
-                const fotoUrl = tessera.foto_url || 'https://via.placeholder.com/150';
+                const fotoUrl = tessera.foto_url || 'https://via.placeholder.com/150/006633/FFFFFF?text=FantaFonta';
                 let htmlCronologia = '<div class="timeline-box"><p class="timeline-title">Storico Punti</p>';
                 if (cronologia && cronologia.length > 0) {
                     cronologia.forEach(item => {
@@ -101,7 +122,7 @@
                         const classePunti = item.punti_assegnati >= 0 ? 'points-plus' : 'points-minus';
                         htmlCronologia += `
                             <div class="timeline-item">
-                                <span>${item.descrizione}</span>
+                                <span>${item.descrizione || 'Bonus/Malus'}</span>
                                 <span class="${classePunti}">${segno}${item.punti_assegnati}pt</span>
                             </div>
                         `;
@@ -112,10 +133,10 @@
                 htmlCronologia += '</div>';
 
                 contentArea.innerHTML = `
-                    <div class="player-name">${tessera.nome_tifoso}</div>
+                    <div class="player-name">${tessera.nome_tifoso || 'Tifoso #' + numTessera}</div>
                     <div class="profile-data">
                         <img src="${fotoUrl}" class="player-photo" alt="Foto">
-                        <div class="player-score">${tessera.punti}<span>Pt.</span></div>
+                        <div class="player-score">${tessera.punti || 0}<span>Pt.</span></div>
                     </div>
                     ${htmlCronologia}
                 `;
