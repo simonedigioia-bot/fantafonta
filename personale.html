@@ -43,9 +43,10 @@
 
         /* Stile del Logo Principale */
         .main-logo {
-            max-height: 55px;
+            height: 48px;
             width: auto;
             object-fit: contain;
+            image-rendering: -webkit-optimize-contrast;
         }
 
         .nav-buttons { 
@@ -174,22 +175,32 @@
             background: rgba(255, 255, 255, 0.15);
             padding: 15px 10px;
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            border: none;
+            overflow: hidden;
         }
 
+        /* Dimensione base per i loghi standard */
         .sponsor-logo {
-            height: 38px;
+            height: 35px;
             max-width: 90px;
             object-fit: contain;
             display: inline-block;
+            border: none !important;
+            outline: none;
+        }
+
+        /* Stile uniforme per K Service, La Terrazza e Pisacane */
+        .sponsor-logo.sponsor-grande {
+            height: 48px;
+            max-width: 120px;
+            object-fit: contain;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <img src="/img/logo-fantafonta.png" alt="FantaFonta" class="main-logo" onerror="if(this.src!='/img/logo-fantafonta.png') this.src='/img/logo-fantafonta.png'; else { this.style.display='none'; document.getElementById('text-logo').style.display='block'; }">
-        <h1 id="text-logo" style="font-family:'Anton'; color:var(--verde-scuro); margin:0; font-size:32px; display:none;">FANTA<i>FONTA</i></h1>
+        <img src="/img/logo-fantafonta.png" alt="FantaFonta" class="main-logo">
     </div>
 
     <div class="nav-buttons">
@@ -207,13 +218,13 @@
     <div class="footer">
         <p style="margin:0; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.85;">Sponsor Ufficiali</p>
         <div class="sponsor-container">
-            <img src="/img/sponsor1.png" alt="Sponsor 1" class="sponsor-logo">
-            <img src="/img/sponsor2.png" alt="Sponsor 2" class="sponsor-logo">
-            <img src="/img/sponsor3.png" alt="Sponsor 3" class="sponsor-logo">
-            <img src="/img/sponsor4.png" alt="Sponsor 4" class="sponsor-logo">
-            <img src="/img/sponsor5.png" alt="Sponsor 5" class="sponsor-logo">
-            <img src="/img/sponsor6.png" alt="Sponsor 6" class="sponsor-logo">
-            <img src="/img/sponsor7.png" alt="Sponsor 7" class="sponsor-logo">
+            <img src="/img/sponsor1.png" alt="Annibaldi" class="sponsor-logo">
+            <img src="/img/sponsor2.png" alt="K Service" class="sponsor-logo sponsor-grande">
+            <img src="/img/sponsor3.png" alt="La Terrazza" class="sponsor-logo sponsor-grande">
+            <img src="/img/sponsor4.png" alt="Qualità e Passione" class="sponsor-logo">
+            <img src="/img/sponsor5.png" alt="DEO" class="sponsor-logo">
+            <img src="/img/sponsor6.png" alt="Pisacane" class="sponsor-logo sponsor-grande">
+            <img src="/img/sponsor7.png" alt="Tekno Ambiente" class="sponsor-logo">
         </div>
     </div>
 
@@ -260,12 +271,12 @@
                     return;
                 }
 
-                const tessera = data[0];
+                const tessera = data.length > 0 ? data[0] : null;
 
-                if (!tessera.attiva) {
+                if (!tessera || !tessera.attiva) {
                     contentArea.innerHTML = `
                         <div class="card">
-                            <div class="badge-tessera">Tessera n° ${tessera.numero_tessera}</div>
+                            <div class="badge-tessera">Tessera n° ${numTessera}</div>
                             <div class="not-active-msg">Questa tessera non è ancora stata attivata.<br>Acquistala dallo staff per iniziare a giocare!</div>
                         </div>`;
                     return;
