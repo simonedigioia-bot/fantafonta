@@ -187,6 +187,7 @@
 
         async function caricaProfilo() {
             const numTesseraStr = getNumeroTessera();
+            const numTesseraInt = parseInt(numTesseraStr, 10);
             const contentArea = document.getElementById('content-area');
 
             if (!_supabase) {
@@ -195,24 +196,31 @@
             }
 
             try {
-                // Legge TUTTI i record senza filtri complessi per evitare blocchi della query
+                // Cerchiamo prima per numero_tessera, se non trova cerchiamo per id
                 let { data: tessere, error: errTessera } = await _supabase
                     .from('Tessere')
-                    .select('*');
+                    .select('*')
+                    .eq('numero_tessera', numTesseraInt);
+
+                if (!tessere || tessere.length === 0) {
+                    let resId = await _supabase
+                        .from('Tessere')
+                        .select('*')
+                        .eq('id', numTesseraInt);
+                    if (resId.data && resId.data.length > 0) {
+                        tessere = resId.data;
+                    }
+                }
 
                 if (errTessera) {
                     contentArea.innerHTML = `
-                        <div class="not-active-msg">Errore durante la ricerca.</div>
-                        <div class="debug-error"><b>Dettaglio Errore Supabase:</b><br>${errTessera.message || JSON.stringify(errTessera)}</div>
+                        <div class="not-active-msg">Errore di lettura.</div>
+                        <div class="debug-error"><b>Errore:</b> ${errTessera.message}</div>
                     `;
                     return;
                 }
 
-                // Cerca la tessera nell'elenco confrontando id o numero_tessera
-                const tessera = tessere ? tessere.find(t => 
-                    String(t.numero_tessera) === String(numTesseraStr) || 
-                    String(t.id) === String(numTesseraStr)
-                ) : null;
+                const tessera = (tessere && tessere.length > 0) ? tessere[0] : null;
 
                 if (!tessera) {
                     contentArea.innerHTML = `<div class="not-active-msg">Tessera #${numTesseraStr} non trovata.</div>`;
@@ -227,20 +235,17 @@
                     return;
                 }
 
-                // Recupero cronologia punti
+                // Recupero cronologia punti per la singola tessera
                 let cronologia = [];
                 try {
                     const { data: dataCronologia } = await _supabase
                         .from('_punti cronologia')
-                        .select('*');
-                    if (dataCronologia) {
-                        cronologia = dataCronologia.filter(c => 
-                            String(c.numero_tessera) === String(numTesseraStr) || 
-                            String(c.tessera_id) === String(numTesseraStr)
-                        );
-                    }
+                        .select('*')
+                        .eq('numero_tessera', numTesseraInt)
+                        .order('created_at', { ascending: false });
+                    if (dataCronologia) cronologia = dataCronologia;
                 } catch (e) {
-                    // Ignora errori di cronologia
+                    // Ignora
                 }
 
                 const fotoUrl = tessera.foto_url || 'https://via.placeholder.com/150/006633/FFFFFF?text=FantaFonta';
