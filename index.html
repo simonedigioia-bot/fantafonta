@@ -5,56 +5,136 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FantaFonta - Classifica Generale</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- LIBRERIA UFFICIALE SUPABASE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { 
-            --verde-scuro: #006633; --verde-chiaro: #e6f0eb;
-            --sfondo-chiaro: #f4f6f8; --testo-scuro: #111111; --card-bg: #ffffff;
+            --verde-scuro: #006633; 
+            --verde-chiaro: #e6f0eb;
+            --sfondo-chiaro: #f4f6f8; 
+            --testo-scuro: #111111; 
+            --card-bg: #ffffff;
         }
+
         * { box-sizing: border-box; }
+
         body { 
-            margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; 
-            background-color: var(--sfondo-chiaro); color: var(--testo-scuro); 
-            display: flex; flex-direction: column; min-height: 100vh; 
+            margin: 0; padding: 0; 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--sfondo-chiaro); 
+            color: var(--testo-scuro); 
+            display: flex; flex-direction: column; 
+            min-height: 100vh; 
         }
+
         .header { 
-            text-align: center; padding: 12px 10px; background: white; 
-            border-bottom: 1px solid #e5e5e5; display: flex; justify-content: center;
+            text-align: center; padding: 12px 10px; 
+            background: white; border-bottom: 1px solid #e5e5e5; 
+            display: flex; justify-content: center; align-items: center;
         }
+
         .main-logo { height: 48px; width: auto; object-fit: contain; }
+
         .nav-buttons { 
             display: flex; justify-content: center; gap: 8px; 
             padding: 10px 12px; background: #ffffff; border-bottom: 1px solid #e5e5e5;
         }
+
         .btn { 
             flex: 1; max-width: 120px; text-align: center; padding: 10px 4px; 
             border: 2px solid var(--verde-scuro); background: white; 
             color: var(--verde-scuro); font-weight: 700; border-radius: 8px; 
             cursor: pointer; text-decoration: none; font-size: 13px; 
         }
+
         .btn.active { background: var(--verde-scuro); color: white; }
-        .content { flex: 1; padding: 15px; max-width: 450px; margin: 0 auto; width: 100%; }
+
+        .content { 
+            flex: 1; padding: 15px; max-width: 450px; 
+            margin: 0 auto; width: 100%; display: flex; flex-direction: column;
+        }
+
         .card {
-            background: var(--card-bg); border-radius: 16px; padding: 25px 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #eaeaea; text-align: center;
+            background: var(--card-bg); border-radius: 16px; padding: 20px 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #eaeaea;
+            margin-top: 5px; text-align: center;
         }
+
         .titolo-classifica {
-            font-family: 'Anton', sans-serif; font-size: 26px; color: var(--verde-scuro); 
-            margin-top: 0; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px;
+            font-family: 'Anton', sans-serif; font-size: 26px; 
+            color: var(--verde-scuro); margin: 0 0 15px 0;
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .footer { background-color: var(--verde-scuro); color: white; text-align: center; padding: 20px 15px; margin-top: auto; }
+
+        /* Stile Tabella Classifica */
+        .ranking-table {
+            width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left;
+        }
+
+        .ranking-table th {
+            font-size: 11px; font-weight: 700; color: #777; text-transform: uppercase;
+            padding: 8px 6px; border-bottom: 2px solid var(--verde-chiaro); letter-spacing: 0.5px;
+        }
+
+        .ranking-table td {
+            padding: 10px 6px; font-size: 13px; border-bottom: 1px solid #f0f0f0;
+        }
+
+        .ranking-table tr:last-child td { border-bottom: none; }
+
+        .pos-col { width: 35px; font-weight: 700; text-align: center; color: var(--verde-scuro); }
+        .pos-podio { font-family: 'Anton', sans-serif; font-size: 16px; }
+        .punti-col { font-weight: 700; color: var(--verde-scuro); text-align: right; }
+        .nome-col { font-weight: 600; color: var(--testo-scuro); }
+        .tessera-sub { font-size: 10px; color: #888; font-weight: 400; display: block; }
+
+        /* Pulsante Tuttocampo */
+        .tuttocampo-section {
+            max-width: 450px; margin: 10px auto 15px auto; width: 100%; padding: 0 15px;
+        }
+
+        .btn-tuttocampo {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background-color: #ffffff; color: var(--verde-scuro); text-decoration: none;
+            padding: 12px 16px; border-radius: 12px; border: 2px solid var(--verde-scuro);
+            font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px;
+            width: 100%; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn-tuttocampo:hover { background-color: var(--verde-chiaro); }
+        .btn-tuttocampo:active { transform: scale(0.98); }
+        .btn-tuttocampo img { height: 20px; width: auto; object-fit: contain; }
+
+        /* Footer e Sponsor */
+        .footer { 
+            background-color: var(--verde-scuro); color: white; 
+            text-align: center; padding: 20px 15px; margin-top: auto; 
+        }
+
+        .sponsor-container {
+            display: flex; justify-content: center; align-items: center; gap: 15px;
+            flex-wrap: wrap; margin-top: 12px; background: rgba(255, 255, 255, 0.15);
+            padding: 15px 10px; border-radius: 8px; border: none; overflow: hidden;
+        }
+
+        .sponsor-logo {
+            height: 35px; max-width: 90px; object-fit: contain; display: inline-block;
+            border: none !important; outline: none;
+        }
+
+        .sponsor-logo.sponsor-grande { height: 48px; max-width: 120px; object-fit: contain; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <img src="/img/logo-fantafonta.png" alt="FantaFonta" class="main-logo" onerror="this.style.display='none'">
+        <img src="/img/logo-fantafonta.png" alt="FantaFonta" class="main-logo">
     </div>
 
-    <!-- NOTA I LINK CON LO SLASH (/) DAVANTI! -->
     <div class="nav-buttons">
         <a href="/personale.html" id="link-personale" class="btn">Personale</a>
-        <a href="/index.html" id="link-classifica" class="btn">Classifica</a>
+        <a href="/index.html" id="link-classifica" class="btn active">Classifica</a>
         <a href="/regolamento.html" id="link-regolamento" class="btn">Regolamento</a>
     </div>
 
@@ -62,17 +142,38 @@
         <div class="card">
             <h2 class="titolo-classifica">Classifica Generale</h2>
             <div id="contenitore-classifica">
-                <p>Classifica in fase di aggiornamento...</p>
+                <p style="color:#666; font-size:13px;">Caricamento classifica in corso...</p>
             </div>
         </div>
     </div>
 
-    <div class="footer">
-        <p style="margin:0; font-size:12px; font-weight:700;">FANTAFONTA 2024</p>
+    <div class="tuttocampo-section">
+        <a href="https://www.tuttocampo.it/Liguria/GE/TerzaCategoria/GironeBGenova/Risultati" target="_blank" class="btn-tuttocampo">
+            <img src="/img/f-logo.png" alt="F">
+            Risultati e Classifiche su Tuttocampo
+        </a>
     </div>
 
-    <!-- SCRIPT MAGICO PER LA NAVIGAZIONE UNIFICATO -->
+    <!-- SPONSOR BOARD -->
+    <div class="footer">
+        <p style="margin:0; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.85;">Sponsor Ufficiali</p>
+        <div class="sponsor-container">
+            <img src="/img/sponsor1.png" alt="Annibaldi" class="sponsor-logo">
+            <img src="/img/sponsor2.png" alt="K Service" class="sponsor-logo sponsor-grande">
+            <img src="/img/sponsor3.png" alt="La Terrazza" class="sponsor-logo sponsor-grande">
+            <img src="/img/sponsor4.png" alt="Qualità e Passione" class="sponsor-logo">
+            <img src="/img/sponsor5.png" alt="DEO" class="sponsor-logo">
+            <img src="/img/sponsor6.png" alt="Pisacane" class="sponsor-logo sponsor-grande">
+            <img src="/img/sponsor7.png" alt="Tekno Ambiente" class="sponsor-logo">
+        </div>
+    </div>
+
     <script>
+        const SUPABASE_URL = 'https://xyyvmobvcggbqracdkki.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eXZtb2J2Y2dnYnFyYWNka2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTU3MDYsImV4cCI6MjA5ODM5MTcwNn0.QpN5HQQxdz77w50e-OOd9GdnoX2B7y8d-4CYeNWyx2U';
+        
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         function impostaNavigazione() {
             const urlParams = new URLSearchParams(window.location.search);
             let numTessera = urlParams.get('tessera');
@@ -99,19 +200,76 @@
             const linkRegolamento = document.getElementById('link-regolamento');
 
             if (linkPersonale) linkPersonale.href = '/personale.html' + suffisso;
-            if (linkClassifica) linkClassifica.href = '/index.html' + suffisso;
+            if (linkClassifica) { linkClassifica.href = '/index.html' + suffisso; linkClassifica.classList.add('active'); }
             if (linkRegolamento) linkRegolamento.href = '/regolamento.html' + suffisso;
-            
-            const currentPage = window.location.pathname.toLowerCase();
-            if (currentPage.includes('personale') || currentPage.includes('/p/')) {
-                if (linkPersonale) { linkPersonale.classList.add('active'); linkPersonale.href = '#'; }
-            } else if (currentPage.includes('regolamento')) {
-                if (linkRegolamento) { linkRegolamento.classList.add('active'); linkRegolamento.href = '#'; }
-            } else { 
-                if (linkClassifica) { linkClassifica.classList.add('active'); linkClassifica.href = '#'; }
+        }
+
+        async function caricaClassifica() {
+            const contenitore = document.getElementById('contenitore-classifica');
+
+            try {
+                const { data, error } = await _supabase
+                    .from('Tessere')
+                    .select('*')
+                    .eq('attiva', true)
+                    .order('punti', { ascending: false });
+
+                if (error) {
+                    contenitore.innerHTML = `<p style="color:red;">Errore caricamento: ${error.message}</p>`;
+                    return;
+                }
+
+                if (!data || data.length === 0) {
+                    contenitore.innerHTML = `<p style="color:#666;">Nessuna tessera attiva in classifica.</p>`;
+                    return;
+                }
+
+                let html = `
+                    <table class="ranking-table">
+                        <thead>
+                            <tr>
+                                <th class="pos-col">#</th>
+                                <th>Partecipante</th>
+                                <th style="text-align:right;">Punti</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                data.forEach((tessera, index) => {
+                    const pos = index + 1;
+                    const nome = tessera.nome_tifoso || `Tessera N° ${tessera.numero_tessera}`;
+                    const punti = (tessera.punti !== undefined && tessera.punti !== null) ? tessera.punti : 0;
+                    
+                    let posDisplay = pos;
+                    if (pos === 1) posDisplay = '🥇';
+                    else if (pos === 2) posDisplay = '🥈';
+                    else if (pos === 3) posDisplay = '🥉';
+
+                    html += `
+                        <tr>
+                            <td class="pos-col ${pos <= 3 ? 'pos-podio' : ''}">${posDisplay}</td>
+                            <td class="nome-col">
+                                ${nome}
+                                <span class="tessera-sub">Tessera N° ${tessera.numero_tessera}</span>
+                            </td>
+                            <td class="punti-col">${punti} Pt</td>
+                        </tr>
+                    `;
+                });
+
+                html += `</tbody></table>`;
+                contenitore.innerHTML = html;
+
+            } catch (err) {
+                contenitore.innerHTML = `<p style="color:red;">Errore generico: ${err.message}</p>`;
             }
         }
-        document.addEventListener('DOMContentLoaded', impostaNavigazione);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            impostaNavigazione();
+            caricaClassifica();
+        });
     </script>
 </body>
 </html>
