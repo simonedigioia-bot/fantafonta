@@ -33,15 +33,14 @@
 
         .header { 
             text-align: center; 
-            padding: 12px 10px; /* Spazio bilanciato */
+            padding: 12px 10px; 
             background: white; 
-            border-bottom: 1px solid #e5e5e5; /* Riga di divisione ripristinata */
+            border-bottom: 1px solid #e5e5e5; 
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* Stile del Logo Principale originale */
         .main-logo {
             height: 48px;
             width: auto;
@@ -53,7 +52,7 @@
             display: flex; 
             justify-content: center; 
             gap: 8px; 
-            padding: 10px 12px; /* Spazio equilibrato sopra la tab */
+            padding: 10px 12px; 
             background: #ffffff; 
             border-bottom: 1px solid #e5e5e5;
         }
@@ -79,8 +78,7 @@
         }
 
         .content { 
-            flex: 1; 
-            padding: 15px; 
+            padding: 15px 15px 0 15px; 
             max-width: 450px; 
             margin: 0 auto; 
             width: 100%; 
@@ -156,10 +154,10 @@
             line-height: 1.5; 
         }
 
-        /* Sezione Pulsante posizionata in basso (sopra il footer) */
+        /* Sezione Pulsante Tuttocampo posizionata subito sotto la Card */
         .tuttocampo-section {
             max-width: 450px;
-            margin: 10px auto 15px auto;
+            margin: 15px auto;
             width: 100%;
             padding: 0 15px;
         }
@@ -198,13 +196,13 @@
             object-fit: contain;
         }
 
-        /* Footer e Griglia Sponsor */
+        /* Footer e Griglia Sponsor subito a seguire */
         .footer { 
             background-color: var(--verde-scuro); 
             color: white; 
             text-align: center; 
             padding: 20px 15px; 
-            margin-top: auto; 
+            margin-top: 10px; 
         }
 
         .sponsor-container {
@@ -243,8 +241,8 @@
         <img src="/img/logo-fantafonta.png" alt="FantaFonta" class="main-logo">
     </div>
 
-   <div class="nav-buttons">
-        <a href="/personale.html" id="link-personale" class="btn">Personale</a>
+    <div class="nav-buttons">
+        <a href="/personale.html" id="link-personale" class="btn active">Personale</a>
         <a href="/index.html" id="link-classifica" class="btn">Classifica</a>
         <a href="/regolamento.html" id="link-regolamento" class="btn">Regolamento</a>
     </div>
@@ -255,7 +253,7 @@
         </div>
     </div>
 
-    <!-- Pulsante Risultati e Classifiche in basso (sopra il footer) -->
+    <!-- Pulsante Risultati e Classifiche -->
     <div class="tuttocampo-section">
         <a href="https://www.tuttocampo.it/Liguria/GE/TerzaCategoria/GironeBGenova/Risultati" target="_blank" class="btn-tuttocampo">
             <img src="/img/f-logo.png" alt="F">
@@ -263,6 +261,7 @@
         </a>
     </div>
 
+    <!-- Footer e Sponsor Ufficiali -->
     <div class="footer">
         <p style="margin:0; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.85;">Sponsor Ufficiali</p>
         <div class="sponsor-container">
@@ -276,14 +275,13 @@
         </div>
     </div>
 
-   <script>
+    <script>
         // Inizializzazione Client Ufficiale Supabase
         const SUPABASE_URL = 'https://xyyvmobvcggbqracdkki.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eXZtb2J2Y2dnYnFyYWNka2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTU3MDYsImV4cCI6MjA5ODM5MTcwNn0.QpN5HQQxdz77w50e-OOd9GdnoX2B7y8d-4CYeNWyx2U';
         
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 1. NUOVA FUNZIONE SICURA PER LEGGERE LA TESSERA (ANTI-NaN)
         function getNumeroTessera() {
             let num = null;
             
@@ -297,10 +295,9 @@
                 num = urlParams.get('tessera');
             }
 
-            // CONTROLLO DI SICUREZZA: se la parola è "regolamento.html" o non è un numero, bloccala
             if (!num || isNaN(num)) {
                 num = localStorage.getItem('miaTessera') || '1';
-                if (isNaN(num)) num = '1'; // Se anche in memoria c'è un errore, resetta a 1
+                if (isNaN(num)) num = '1';
             } else {
                 localStorage.setItem('miaTessera', num);
             }
@@ -308,7 +305,6 @@
             return num;
         }
 
-        // 2. AGGIORNA I LINK IN ALTO PER NON PERDERE LA TESSERA CAMBIANDO PAGINA
         function aggiornaNavigazione(numTessera) {
             let suffisso = (numTessera && !isNaN(numTessera)) ? '?tessera=' + numTessera : '';
             
@@ -321,12 +317,10 @@
             if (linkRegolamento) linkRegolamento.href = '/regolamento.html' + suffisso;
         }
 
-        // 3. CARICA IL PROFILO E MOSTRA I DATI
         async function caricaProfilo() {
             const rawTessera = getNumeroTessera();
             const numTessera = parseInt(rawTessera, 10);
             
-            // Fissa i bottoni prima di scaricare i dati
             aggiornaNavigazione(numTessera);
             
             const contentArea = document.getElementById('content-area');
@@ -389,3 +383,5 @@
 
         caricaProfilo();
     </script>
+</body>
+</html>
