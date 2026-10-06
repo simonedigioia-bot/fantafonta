@@ -77,7 +77,7 @@
         }
 
         .ranking-table td {
-            padding: 10px 6px; font-size: 13px; border-bottom: 1px solid #f0f0f0;
+            padding: 12px 6px; font-size: 14px; border-bottom: 1px solid #f0f0f0;
         }
 
         .ranking-table tr:last-child td { border-bottom: none; }
@@ -86,7 +86,6 @@
         .pos-podio { font-family: 'Anton', sans-serif; font-size: 16px; }
         .punti-col { font-weight: 700; color: var(--verde-scuro); text-align: right; }
         .nome-col { font-weight: 600; color: var(--testo-scuro); }
-        .tessera-sub { font-size: 10px; color: #888; font-weight: 400; display: block; }
 
         /* Pulsante Tuttocampo */
         .tuttocampo-section {
@@ -140,7 +139,7 @@
 
     <div class="content">
         <div class="card">
-            <h2 class="titolo-classifica">Classifica Generale</h2>
+            <h2 class="titolo-classifica">Top 5 Classifica</h2>
             <div id="contenitore-classifica">
                 <p style="color:#666; font-size:13px;">Caricamento classifica in corso...</p>
             </div>
@@ -208,11 +207,13 @@
             const contenitore = document.getElementById('contenitore-classifica');
 
             try {
+                // Recupera solo i primi 5 in classifica
                 const { data, error } = await _supabase
                     .from('Tessere')
                     .select('*')
                     .eq('attiva', true)
-                    .order('punti', { ascending: false });
+                    .order('punti', { ascending: false })
+                    .limit(5);
 
                 if (error) {
                     contenitore.innerHTML = `<p style="color:red;">Errore caricamento: ${error.message}</p>`;
@@ -249,10 +250,7 @@
                     html += `
                         <tr>
                             <td class="pos-col ${pos <= 3 ? 'pos-podio' : ''}">${posDisplay}</td>
-                            <td class="nome-col">
-                                ${nome}
-                                <span class="tessera-sub">Tessera N° ${tessera.numero_tessera}</span>
-                            </td>
+                            <td class="nome-col">${nome}</td>
                             <td class="punti-col">${punti} Pt</td>
                         </tr>
                     `;
