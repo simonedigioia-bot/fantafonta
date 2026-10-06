@@ -11,6 +11,24 @@
         :root { 
             --verde-scuro: #006633; 
             --verde-chiaro: #e6f0eb;
+            --sfondo-chiaro: #fIl file `index.html` è stato creato correttamente su GitHub, ma nel mio messaggio precedente il codice si era interrotto a metà. Prima di procedere con i test, è necessario inserire il codice completo.
+
+### 1. Inserisci il codice completo su `index.html`
+
+Apri il file `index.html` su GitHub, clicca sull'icona della matita per modificarlo e sostituisci l'intero contenuto con questo codice. Include la struttura completa, la grafica e lo script che memorizza l'utente:
+
+```html
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FantaFonta - Classifica Generale</title>
+    <link href="[https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap](https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap)" rel="stylesheet">
+    <style>
+        :root { 
+            --verde-scuro: #006633; 
+            --verde-chiaro: #e6f0eb;
             --sfondo-chiaro: #f4f6f8; 
             --testo-scuro: #111111; 
             --card-bg: #ffffff;
@@ -23,4 +41,101 @@
             font-family: 'Montserrat', sans-serif; 
             background-color: var(--sfondo-chiaro); 
             color: var(--testo-scuro); 
-            display: flex; flex-direction: column;
+            display: flex; flex-direction: column; 
+            min-height: 100vh; 
+        }
+
+        .header { 
+            text-align: center; padding: 12px 10px; 
+            background: white; border-bottom: 1px solid #e5e5e5; 
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .main-logo { height: 48px; width: auto; object-fit: contain; }
+
+        .nav-buttons { 
+            display: flex; justify-content: center; gap: 8px; 
+            padding: 10px 12px; background: #ffffff; border-bottom: 1px solid #e5e5e5;
+        }
+
+        .btn { 
+            flex: 1; max-width: 120px; text-align: center; padding: 10px 4px; 
+            border: 2px solid var(--verde-scuro); background: white; 
+            color: var(--verde-scuro); font-weight: 700; border-radius: 8px; 
+            cursor: pointer; text-decoration: none; font-size: 13px; 
+        }
+
+        .btn.active { background: var(--verde-scuro); color: white; }
+
+        .content { 
+            flex: 1; padding: 15px; max-width: 450px; 
+            margin: 0 auto; width: 100%; display: flex; flex-direction: column;
+        }
+
+        .card {
+            background: var(--card-bg); border-radius: 16px; padding: 25px 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #eaeaea;
+            margin-top: 5px; text-align: center;
+        }
+
+        .titolo-classifica {
+            font-family: 'Anton', sans-serif; font-size: 26px; 
+            color: var(--verde-scuro); margin-top: 0; margin-bottom: 15px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .footer { 
+            background-color: var(--verde-scuro); color: white; 
+            text-align: center; padding: 20px 15px; margin-top: auto; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <img src="/img/logo-fantafonta.png" alt="FantaFonta" class="main-logo">
+    </div>
+
+    <div class="nav-buttons">
+        <a href="personale.html" id="link-personale" class="btn">Personale</a>
+        <a href="#" id="link-classifica" class="btn active">Classifica</a>
+        <a href="regolamento.html" id="link-regolamento" class="btn">Regolamento</a>
+    </div>
+
+    <div class="content">
+        <div class="card">
+            <h2 class="titolo-classifica">Classifica Generale</h2>
+            <div id="contenitore-classifica">
+                <p>Classifica in fase di aggiornamento...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p style="margin:0; font-size:12px; font-weight:700;">FANTAFONTA 2024</p>
+    </div>
+
+    <script>
+        function impostaNavigazione() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let numTessera = urlParams.get('tessera');
+
+            if (numTessera) {
+                localStorage.setItem('miaTessera', numTessera);
+            } else {
+                numTessera = localStorage.getItem('miaTessera');
+            }
+
+            let suffisso = numTessera ? '?tessera=' + numTessera : '';
+
+            const linkPersonale = document.getElementById('link-personale');
+            const linkRegolamento = document.getElementById('link-regolamento');
+
+            if (linkPersonale) linkPersonale.href = 'personale.html' + suffisso;
+            if (linkRegolamento) linkRegolamento.href = 'regolamento.html' + suffisso;
+        }
+
+        document.addEventListener('DOMContentLoaded', impostaNavigazione);
+    </script>
+</body>
+</html>
