@@ -276,24 +276,59 @@
         </div>
     </div>
 
-    <script>
+   <script>
         // Inizializzazione Client Ufficiale Supabase
         const SUPABASE_URL = 'https://xyyvmobvcggbqracdkki.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eXZtb2J2Y2dnYnFyYWNka2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTU3MDYsImV4cCI6MjA5ODM5MTcwNn0.QpN5HQQxdz77w50e-OOd9GdnoX2B7y8d-4CYeNWyx2U';
         
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // 1. NUOVA FUNZIONE SICURA PER LEGGERE LA TESSERA (ANTI-NaN)
         function getNumeroTessera() {
+            let num = null;
+            
             const pathParts = window.location.pathname.split('/').filter(p => p.length > 0);
             if (pathParts.length > 0 && pathParts[0] === 'p' && pathParts[1]) {
-                return pathParts[1];
+                num = pathParts[1];
             }
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('tessera') || '1';
+            
+            if (!num) {
+                const urlParams = new URLSearchParams(window.location.search);
+                num = urlParams.get('tessera');
+            }
+
+            // CONTROLLO DI SICUREZZA: se la parola è "regolamento.html" o non è un numero, bloccala
+            if (!num || isNaN(num)) {
+                num = localStorage.getItem('miaTessera') || '1';
+                if (isNaN(num)) num = '1'; // Se anche in memoria c'è un errore, resetta a 1
+            } else {
+                localStorage.setItem('miaTessera', num);
+            }
+            
+            return num;
         }
 
+        // 2. AGGIORNA I LINK IN ALTO PER NON PERDERE LA TESSERA CAMBIANDO PAGINA
+        function aggiornaNavigazione(numTessera) {
+            let suffisso = (numTessera && !isNaN(numTessera)) ? '?tessera=' + numTessera : '';
+            
+            const linkPersonale = document.getElementById('link-personale');
+            const linkClassifica = document.getElementById('link-classifica');
+            const linkRegolamento = document.getElementById('link-regolamento');
+
+            if (linkPersonale) { linkPersonale.href = '/personale.html' + suffisso; linkPersonale.classList.add('active'); }
+            if (linkClassifica) linkClassifica.href = '/index.html' + suffisso;
+            if (linkRegolamento) linkRegolamento.href = '/regolamento.html' + suffisso;
+        }
+
+        // 3. CARICA IL PROFILO E MOSTRA I DATI
         async function caricaProfilo() {
-            const numTessera = parseInt(getNumeroTessera(), 10);
+            const rawTessera = getNumeroTessera();
+            const numTessera = parseInt(rawTessera, 10);
+            
+            // Fissa i bottoni prima di scaricare i dati
+            aggiornaNavigazione(numTessera);
+            
             const contentArea = document.getElementById('content-area');
 
             try {
@@ -354,5 +389,3 @@
 
         caricaProfilo();
     </script>
-</body>
-</html>
