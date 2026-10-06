@@ -1,1 +1,152 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FantaFonta - Regolamento</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --verde-scuro: #006633; 
+            --verde-chiaro: #e6f0eb;
+            --sfondo-chiaro: #f4f6f8; 
+            --testo-scuro: #111111; 
+            --card-bg: #ffffff;
+        }
 
+        * { box-sizing: border-box; }
+
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--sfondo-chiaro); 
+            color: var(--testo-scuro); 
+            display: flex; flex-direction: column; 
+            min-height: 100vh; 
+        }
+
+        .header { 
+            text-align: center; padding: 12px 10px; 
+            background: white; border-bottom: 1px solid #e5e5e5; 
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .main-logo { height: 48px; width: auto; object-fit: contain; }
+
+        .nav-buttons { 
+            display: flex; justify-content: center; gap: 8px; 
+            padding: 10px 12px; background: #ffffff; border-bottom: 1px solid #e5e5e5;
+        }
+
+        .btn { 
+            flex: 1; max-width: 120px; text-align: center; padding: 10px 4px; 
+            border: 2px solid var(--verde-scuro); background: white; 
+            color: var(--verde-scuro); font-weight: 700; border-radius: 8px; 
+            cursor: pointer; text-decoration: none; font-size: 13px; 
+        }
+
+        .btn.active { background: var(--verde-scuro); color: white; }
+
+        .content { 
+            flex: 1; padding: 15px; max-width: 450px; 
+            margin: 0 auto; width: 100%; display: flex; flex-direction: column;
+        }
+
+        .card {
+            background: var(--card-bg); border-radius: 16px; padding: 25px 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #eaeaea;
+            margin-top: 5px; text-align: left; /* Testo a sinistra per il regolamento */
+        }
+
+        .titolo-regolamento {
+            font-family: 'Anton', sans-serif; font-size: 26px; 
+            color: var(--verde-scuro); margin-top: 0; margin-bottom: 15px;
+            text-align: center; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .testo-regolamento h3 {
+            color: var(--verde-scuro); font-size: 16px; margin-top: 20px; margin-bottom: 5px;
+        }
+
+        .testo-regolamento p, .testo-regolamento li {
+            font-size: 14px; line-height: 1.6; color: #444; margin-top: 0;
+        }
+
+        .footer { 
+            background-color: var(--verde-scuro); color: white; 
+            text-align: center; padding: 20px 15px; margin-top: auto; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <img src="/img/logo-fantafonta.png" alt="FantaFonta" class="main-logo">
+    </div>
+
+    <!-- NOTA BENE: Ho aggiunto gli ID ai pulsanti (link-personale, ecc.) -->
+    <div class="nav-buttons">
+        <a href="personale.html" id="link-personale" class="btn">Personale</a>
+        <a href="index.html" id="link-classifica" class="btn">Classifica</a>
+        <a href="#" id="link-regolamento" class="btn active">Regolamento</a>
+    </div>
+
+    <div class="content">
+        <div class="card">
+            <h2 class="titolo-regolamento">Regolamento Ufficiale</h2>
+            <div class="testo-regolamento">
+                <h3>1. Assegnazione Punti</h3>
+                <p>I punti vengono assegnati in base alle prestazioni reali della squadra durante il campionato. (Inserisci qui le tue regole sui punti).</p>
+                
+                <h3>2. Le Tessere</h3>
+                <p>Ogni partecipante deve essere in possesso di una tessera valida. Le tessere non attivate non accumulano punti.</p>
+                
+                <h3>3. Aggiornamento Classifica</h3>
+                <p>La classifica e i punti sulle singole tessere vengono aggiornati settimanamente entro il Martedì sera.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p style="margin:0; font-size:12px; font-weight:700;">FANTAFONTA 2024</p>
+    </div>
+
+    <!-- SCRIPT MAGICO PER LA NAVIGAZIONE -->
+    <script>
+        function impostaNavigazione() {
+            // 1. Cerco il numero tessera nell'URL (es: ?tessera=5)
+            const urlParams = new URLSearchParams(window.location.search);
+            let numTessera = urlParams.get('tessera');
+
+            // 2. Controllo anche se è nel formato /p/5 (opzionale, basato sul tuo vecchio codice)
+            const pathParts = window.location.pathname.split('/').filter(p => p.length > 0);
+            if (!numTessera && pathParts.length > 0 && pathParts[0] === 'p' && pathParts[1]) {
+                numTessera = pathParts[1];
+            }
+
+            // 3. Se lo trovo, lo salvo nella memoria del telefono
+            if (numTessera) {
+                localStorage.setItem('miaTessera', numTessera);
+            } else {
+                // 4. Se non c'è nell'URL, lo recupero dalla memoria del telefono!
+                numTessera = localStorage.getItem('miaTessera');
+            }
+
+            // 5. Aggiorno tutti i pulsanti del menu
+            const linkPersonale = document.getElementById('link-personale');
+            const linkClassifica = document.getElementById('link-classifica');
+            const linkRegolamento = document.getElementById('link-regolamento');
+
+            // Se abbiamo un numero tessera, lo "attacchiamo" alla fine dei link
+            let suffisso = numTessera ? '?tessera=' + numTessera : '';
+
+            if (linkPersonale) linkPersonale.href = 'personale.html' + suffisso;
+            if (linkClassifica) linkClassifica.href = 'index.html' + suffisso;
+            if (linkRegolamento) linkRegolamento.href = 'regolamento.html' + suffisso;
+        }
+
+        // Faccio partire la funzione appena la pagina si carica
+        document.addEventListener('DOMContentLoaded', impostaNavigazione);
+    </script>
+</body>
+</html>
