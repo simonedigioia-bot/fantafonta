@@ -3,90 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FantaFonta - Regolamento</title>
+    <title>FantaFonta - Regolamento Ufficiale</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --verde-scuro: #006633; --verde-chiaro: #e6f0eb;
-            --sfondo-chiaro: #f4f6f8; --testo-scuro: #111111; --card-bg: #ffffff;
+            --verde-scuro: #006633; 
+            --verde-chiaro: #e6f0eb;
+            --sfondo-chiaro: #f4f6f8; 
+            --testo-scuro: #111111; 
+            --card-bg: #ffffff;
+            --colore-bonus: #006633;
+            --colore-malus: #c0392b;
         }
+
         * { box-sizing: border-box; }
+
         body { 
-            margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; 
-            background-color: var(--sfondo-chiaro); color: var(--testo-scuro); 
-            display: flex; flex-direction: column; min-height: 100vh; 
+            margin: 0; padding: 0; 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--sfondo-chiaro); 
+            color: var(--testo-scuro); 
+            display: flex; flex-direction: column; 
+            min-height: 100vh; 
         }
+
         .header { 
-            text-align: center; padding: 12px 10px; background: white; 
-            border-bottom: 1px solid #e5e5e5; display: flex; justify-content: center;
+            text-align: center; padding: 12px 10px; 
+            background: white; border-bottom: 1px solid #e5e5e5; 
+            display: flex; justify-content: center; align-items: center;
         }
+
         .main-logo { height: 48px; width: auto; object-fit: contain; }
+
         .nav-buttons { 
             display: flex; justify-content: center; gap: 8px; 
             padding: 10px 12px; background: #ffffff; border-bottom: 1px solid #e5e5e5;
         }
+
         .btn { 
             flex: 1; max-width: 120px; text-align: center; padding: 10px 4px; 
             border: 2px solid var(--verde-scuro); background: white; 
             color: var(--verde-scuro); font-weight: 700; border-radius: 8px; 
             cursor: pointer; text-decoration: none; font-size: 13px; 
         }
+
         .btn.active { background: var(--verde-scuro); color: white; }
-        .content { flex: 1; padding: 15px; max-width: 450px; margin: 0 auto; width: 100%; }
+
+        .content { 
+            flex: 1; padding: 15px; max-width: 450px; 
+            margin: 0 auto; width: 100%; display: flex; flex-direction: column;
+        }
+
         .card {
-            background: var(--card-bg); border-radius: 16px; padding: 25px 20px;
+            background: var(--card-bg); border-radius: 16px; padding: 20px 18px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #eaeaea;
+            margin-top: 5px;
         }
-        .titolo-regolamento {
-            font-family: 'Anton', sans-serif; font-size: 26px; color: var(--verde-scuro); 
-            margin-top: 0; margin-bottom: 15px; text-transform: uppercase; text-align: center;
+
+        .regolamento-title {
+            font-family: 'Anton', sans-serif; font-size: 24px; 
+            text-align: center; color: var(--verde-scuro); 
+            margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .regola-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .regola-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .punti { font-weight: bold; color: var(--verde-scuro); font-size: 18px; }
-        .footer { background-color: var(--verde-scuro); color: white; text-align: center; padding: 20px 15px; margin-top: auto; }
+
+        .regolamento-subtitle {
+            font-size: 13px; text-align: center; color: #555; 
+            margin: 0 0 20px 0; line-height: 1.4; font-weight: 600;
+        }
+
+        .section-heading {
+            font-family: 'Anton', sans-serif; font-size: 18px; 
+            margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .section-heading.bonus {
+            color: var(--colore-bonus); border-bottom: 2px solid var(--colore-bonus); padding-bottom: 4px;
+        }
+
+        .section-heading.malus {
+            color: var(--colore-malus); border-bottom: 2px solid var(--colore-malus); padding-bottom: 4px;
+        }
+
+        .rule-category {
+            font-size: 13px; font-weight: 700; color: #333; margin: 12px 0 6px 0; text-transform: uppercase;
+        }
+
+        .rule-item {
+            font-size: 12.5px; color: #444; margin-bottom: 8px; line-height: 1.4; padding-left: 4px;
+        }
+
+        .rule-item strong { color: var(--testo-scuro); }
+
+        /* Pulsante Tuttocampo */
+        .tuttocampo-section {
+            max-width: 450px; margin: 10px auto 15px auto; width: 100%; padding: 0 15px;
+        }
+
+        .btn-tuttocampo {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background-color: #ffffff; color: var(--verde-scuro); text-decoration: none;
+            padding: 12px 16px; border-radius: 12px; border: 2px solid var(--verde-scuro);
+            font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px;
+            width: 100%; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn-tuttocampo:hover { background-color: var(--verde-chiaro); }
+        .btn-tuttocampo:active { transform: scale(0.98); }
+        .btn-tuttocampo img { height: 20px; width: auto; object-fit: contain; }
+
+        /* Footer e Sponsor */
+        .footer { 
+            background-color: var(--verde-scuro); color: white; 
+            text-align: center; padding: 20px 15px; margin-top: auto; 
+        }
+
+        .sponsor-container {
+            display: flex; justify-content: center; align-items: center; gap: 15px;
+            flex-wrap: wrap; margin-top: 12px; background: rgba(255, 255, 255, 0.15);
+            padding: 15px 10px; border-radius: 8px; border: none; overflow: hidden;
+        }
+
+        .sponsor-logo {
+            height: 35px; max-width: 90px; object-fit: contain; display: inline-block;
+            border: none !important; outline: none;
+        }
+
+        .sponsor-logo.sponsor-grande { height: 48px; max-width: 120px; object-fit: contain; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <img src="/img/logo-fantafonta.png" alt="FantaFonta" class="main-logo" onerror="this.style.display='none'">
+        <img src="/img/logo-fantafonta.png" alt="FantaFonta" class="main-logo">
     </div>
 
     <div class="nav-buttons">
         <a href="/personale.html" id="link-personale" class="btn">Personale</a>
         <a href="/index.html" id="link-classifica" class="btn">Classifica</a>
-        <a href="/regolamento.html" id="link-regolamento" class="btn">Regolamento</a>
+        <a href="/regolamento.html" id="link-regolamento" class="btn active">Regolamento</a>
     </div>
 
     <div class="content">
         <div class="card">
-            <h2 class="titolo-regolamento">Regolamento</h2>
-            
-            <div class="regola-item">
-                <span class="punti">+5 Punti</span>
-                <p style="margin: 5px 0 0;">Gol segnato</p>
-            </div>
-            <div class="regola-item">
-                <span class="punti">+3 Punti</span>
-                <p style="margin: 5px 0 0;">Assist</p>
-            </div>
-            <div class="regola-item">
-                <span class="punti" style="color: #cc0000;">-1 Punto</span>
-                <p style="margin: 5px 0 0;">Ammonizione</p>
-            </div>
-            <div class="regola-item">
-                <span class="punti" style="color: #cc0000;">-3 Punti</span>
-                <p style="margin: 5px 0 0;">Espulsione</p>
-            </div>
+            <h1 class="regolamento-title">Regolamento Ufficiale</h1>
+            <p class="regolamento-subtitle">Ecco come accumulare punti con la tua tessera abbonato e scalare la classifica generale!</p>
+
+            <div class="section-heading bonus">🟢 I Bonus (Punti Guadagnati)</div>
+
+            <div class="rule-category">🏟️ Presenza e Fedeltà</div>
+            <div class="rule-item"><strong>+10 pt:</strong> Presenza alla partita in casa.</div>
+            <div class="rule-item"><strong>+25 pt:</strong> Presenza in trasferta.</div>
+            <div class="rule-item"><strong>+50 pt:</strong> "Fedeltà Assoluta" (5 presenze consecutive).</div>
+
+            <div class="rule-category">📢 Supporto Attivo</div>
+            <div class="rule-item"><strong>+15 pt:</strong> Tifoso con sciarpa o maglia ufficiale Fontanarossa.</div>
+            <div class="rule-item"><strong>+20 pt:</strong> Coreografia, bandiera o striscione fatto in casa.</div>
+
+            <div class="rule-category">🌧️ Condizioni Meteo Estreme</div>
+            <div class="rule-item"><strong>+15 pt:</strong> "Diluvio Universale" (presenza al campo sotto la pioggia).</div>
+            <div class="rule-item"><strong>+20 pt:</strong> "Ghiaccio nelle vene" (trasferte invernali sotto i 5 gradi).</div>
+            <div class="rule-item"><strong>+10 pt:</strong> "Sol Leone" (resistere sui gradoni senza ombra).</div>
+
+            <div class="rule-category">🤝 Sostegno agli Sponsor</div>
+            <div class="rule-item"><strong>+20 pt:</strong> "Serata da Campioni" (serata o cena a La Terrazza di Sturla).</div>
+            <div class="rule-item"><strong>+15 pt:</strong> "Dolce Vittoria" (gelato alla Gelateria Pisacane).</div>
+            <div class="rule-item"><strong>+15 pt:</strong> "Carboidrato Tattico" (pizza da Qualità e Passione Pizzeria).</div>
+
+            <div class="rule-category">📱 Interazione Social</div>
+            <div class="rule-item"><strong>+10 pt:</strong> Storia Instagram dallo stadio taggando il Fontanarossa.</div>
+            <div class="rule-item"><strong>+10 pt:</strong> "Il Veggente" (indovinare il pronostico 1X2 nei commenti).</div>
+            <div class="rule-item"><strong>+20 pt:</strong> "Mago del Risultato" (indovinare il risultato esatto nei commenti).</div>
+
+            <div class="rule-category">🍻 Terzo Tempo</div>
+            <div class="rule-item"><strong>+15 pt:</strong> Presenza al terzo tempo al bar del campo con la squadra.</div>
+
+            <div class="section-heading malus" style="margin-top: 25px;">🔴 I Malus (Punti Persi)</div>
+            <div class="rule-item" style="margin-top: 10px;"><strong>-10 pt:</strong> Arrivare oltre il secondo tempo per colpa del "pranzo coi parenti".</div>
+            <div class="rule-item"><strong>-15 pt:</strong> Abbandonare gli spalti prima del fischio finale se stiamo perdendo.</div>
         </div>
     </div>
 
-    <div class="footer">
-        <p style="margin:0; font-size:12px; font-weight:700;">FANTAFONTA 2024</p>
+    <div class="tuttocampo-section">
+        <a href="https://www.tuttocampo.it/Liguria/GE/TerzaCategoria/GironeBGenova/Risultati" target="_blank" class="btn-tuttocampo">
+            <img src="/img/f-logo.png" alt="F">
+            Risultati e Classifiche su Tuttocampo
+        </a>
     </div>
 
-    <!-- SCRIPT MAGICO PER LA NAVIGAZIONE UNIFICATO -->
+    <!-- SPONSOR BOARD -->
+    <div class="footer">
+        <p style="margin:0; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.85;">Sponsor Ufficiali</p>
+        <div class="sponsor-container">
+            <img src="/img/sponsor1.png" alt="Annibaldi" class="sponsor-logo">
+            <img src="/img/sponsor2.png" alt="K Service" class="sponsor-logo sponsor-grande">
+            <img src="/img/sponsor3.png" alt="La Terrazza" class="sponsor-logo sponsor-grande">
+            <img src="/img/sponsor4.png" alt="Qualità e Passione" class="sponsor-logo">
+            <img src="/img/sponsor5.png" alt="DEO" class="sponsor-logo">
+            <img src="/img/sponsor6.png" alt="Pisacane" class="sponsor-logo sponsor-grande">
+            <img src="/img/sponsor7.png" alt="Tekno Ambiente" class="sponsor-logo">
+        </div>
+    </div>
+
     <script>
         function impostaNavigazione() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -115,16 +233,7 @@
 
             if (linkPersonale) linkPersonale.href = '/personale.html' + suffisso;
             if (linkClassifica) linkClassifica.href = '/index.html' + suffisso;
-            if (linkRegolamento) linkRegolamento.href = '/regolamento.html' + suffisso;
-            
-            const currentPage = window.location.pathname.toLowerCase();
-            if (currentPage.includes('personale') || currentPage.includes('/p/')) {
-                if (linkPersonale) { linkPersonale.classList.add('active'); linkPersonale.href = '#'; }
-            } else if (currentPage.includes('regolamento')) {
-                if (linkRegolamento) { linkRegolamento.classList.add('active'); linkRegolamento.href = '#'; }
-            } else { 
-                if (linkClassifica) { linkClassifica.classList.add('active'); linkClassifica.href = '#'; }
-            }
+            if (linkRegolamento) { linkRegolamento.href = '/regolamento.html' + suffisso; linkRegolamento.classList.add('active'); }
         }
         document.addEventListener('DOMContentLoaded', impostaNavigazione);
     </script>
