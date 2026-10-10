@@ -161,7 +161,7 @@
             font-size: 14px;
         }
 
-        .error-msg { color: #dc2626; font-size: 14px; margin-top: 5px; text-align: center; font-weight: 600; }
+        .error-msg { color: #dc2626; font-size: 14px; margin-top: 10px; text-align: center; font-weight: 600; line-height: 1.4; }
         
         .nav-back {
             display: block;
@@ -204,8 +204,8 @@
         const ADMIN_PIN = "1928";
         
         // Credenziali ufficiali dal tuo progetto Supabase
-        const SUPABASE_URL = "https://xyvmovvcggbqracdkkki.supabase.co";[cite: 7, 9, 13]
-        const SUPABASE_ANON_KEY = "sb_pubblicabile_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";[cite: 5, 11, 12]
+        const SUPABASE_URL = "https://xyvmovvcggbqracdkkki.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_pubblicabile_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
         
         let supabaseClient = null;
         let tutteLeTessere = [];
@@ -218,7 +218,7 @@
                 errDiv.innerText = "";
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
-                caricaAbbonatiSupabase();
+                caricaAbbonatiReali();
             } else {
                 errDiv.innerText = "PIN errato! Riprova.";
             }
@@ -230,17 +230,17 @@
             }
         });
 
-        async function caricaAbbonatiSupabase() {
+        async function caricaAbbonatiReali() {
             const listElem = document.getElementById('tessere-list');
-            listElem.innerHTML = "<p style='text-align:center;'>Connessione al database...</p>";
+            listElem.innerHTML = "<p style='text-align:center;'>Connessione al database di FantaFonta...</p>";
 
             try {
-                if (window.supabase) {
-                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                } else {
+                if (!window.supabase) {
                     listElem.innerHTML = "<p class='error-msg'>Libreria Supabase non caricata.</p>";
                     return;
                 }
+
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
                 const { data, error } = await supabaseClient
                     .from('Tessere')
@@ -248,14 +248,19 @@
                     .order('numero_tessera', { ascending: true });
 
                 if (error) {
-                    listElem.innerHTML = `<p class='error-msg'>Errore database: ${error.message}</p>`;
+                    listElem.innerHTML = `<p class='error-msg'>Errore da Supabase: ${error.message}<br><small>Verifica che la tabella si chiami esattamente 'Tessere' e che abbia le politiche di lettura abilitate (RLS).</small></p>`;
                     return;
                 }
 
-                tutteLeTessere = data || [];
+                if (!data || data.length === 0) {
+                    listElem.innerHTML = "<p style='text-align:center;'>La tabella 'Tessere' è vuota nel database.</p>";
+                    return;
+                }
+
+                tutteLeTessere = data;
                 mostraTessere(tutteLeTessere);
             } catch (err) {
-                listElem.innerHTML = `<p class='error-msg'>Errore di connessione: ${err.message}</p>`;
+                listElem.innerHTML = `<p class='error-msg'>Errore critico di connessione: ${err.message}</p>`;
             }
         }
 
@@ -287,3 +292,30 @@
                             <button class="btn-pts minus" onclick="modificaPunti(${t.id}, -10)">-10</button>
                             <button class="btn-pts minus" onclick="modificaPunti(${t.id}, -15)">-15</button>
                             <input type="number" class="custom-input" id="custom-${t.id}" placeholder="±Val">
+                            <button class="btn-pts" onclick="applicaCustom(${t.id})">OK</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function filtraTessere() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtrate = tutteLeTessere.filter(t => {
+                const nome = (t.nome_tifoso || "").toLowerCase();
+                const numero = String(t.numero_tessera || "");
+                return nome.includes(query) || numero.includes(query);
+            });
+            mostraTessere(filtrate);
+        }
+
+        async function modificaPunti(id, delta) {
+            const tessera = tutteLeTessere.find(t => t.id === id);
+            if (!tessera) return;
+            const puntiAttuali = tessera.punti || 0;
+            const nuovoTotale = puntiAttuali + delta;
+            await aggiornaPuntiDB(id, nuovoTotale);
+        }
+
+        async function applicaCustom
