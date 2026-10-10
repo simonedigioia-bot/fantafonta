@@ -1,1 +1,328 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - FantaFonta</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --verde-scuro: #006633;
+            --verde-chiaro: #e6f0eb;
+            --sfondo: #f4f6f8;
+            --testo: #111111;
+        }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--sfondo);
+            color: var(--testo);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin-top: 20px;
+        }
+
+        h1, h2 {
+            font-family: 'Anton', sans-serif;
+            color: var(--verde-scuro);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        h1 { font-size: 36px; margin-bottom: 5px; }
+        p { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
+
+        /* Schermata Login PIN */
+        #login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 40px 0;
+        }
+
+        .pin-input {
+            font-size: 28px;
+            text-align: center;
+            padding: 12px;
+            width: 200px;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            letter-spacing: 8px;
+        }
+
+        .btn {
+            background-color: var(--verde-scuro);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { background-color: #004d26; }
+
+        /* Pannello Admin */
+        #admin-panel { display: none; }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .user-card {
+            background: #fafafa;
+            border: 2px solid #eee;
+            border-radius: 14px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .user-tessera {
+            font-size: 14px;
+            color: #666;
+            background: var(--verde-chiaro);
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+
+        .user-points {
+            font-family: 'Anton', sans-serif;
+            font-size: 24px;
+            color: var(--verde-scuro);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn-pts {
+            background: #e2e8f0;
+            border: none;
+            padding: 8px 12px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-pts.plus { background: #d1fae5; color: #065f46; }
+        .btn-pts.minus { background: #fee2e2; color: #991b1b; }
+        
+        .custom-input {
+            width: 70px;
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .error-msg { color: #dc2626; font-size: 14px; margin-top: 5px; }
+        
+        .nav-back {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .nav-back:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Admin FantaFonta</h1>
+        <p>Pannello di controllo punti riservato allo staff</p>
+
+        <!-- SEZIONE LOGIN PIN -->
+        <div id="login-screen">
+            <p>Inserisci il PIN segreto amministratore:</p>
+            <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="••••">
+            <button class="btn" onclick="verificaPin()">Accedi</button>
+            <div id="login-error" class="error-msg"></div>
+        </div>
+
+        <!-- SEZIONE GESTIONE ABBONATI -->
+        <div id="admin-panel">
+            <input type="text" id="search-input" class="search-box" placeholder="Cerca per nome o numero tessera..." onkeyup="filtraTessere()">
+            
+            <div id="tessere-list">
+                <p>Caricamento abbonati in corso...</p>
+            </div>
+        </div>
+    </div>
+
+    <a href="index.html" class="nav-back">← Torna al sito principale</a>
+
+    <script>
+        // CONFIGURAZIONE SUPABASE
+        const SUPABASE_URL = "https://xyvmobvcggbqracdkkki.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // PIN DI ACCESSO (Puoi cambiarlo qui quando vuoi)
+        const ADMIN_PIN = "1928"; 
+
+        let tutteLeTessere = [];
+
+        function verificaPin() {
+            const pinInserito = document.getElementById('pin-input').value;
+            if (pinInserito === ADMIN_PIN) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
+                caricaAbbonatiSupabase();
+            } else {
+                document.getElementById('login-error').innerText = "PIN errato! Riprova.";
+            }
+        }
+
+        // Permetti invio con tasto Invio sul PIN
+        document.getElementById('pin-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') verificaPin();
+        });
+
+        async function caricaAbbonatiSupabase() {
+            const { data, error } = await supabase
+                .from('Tessere')
+                .select('*')
+                .order('numero_tessera', { ascending: true });
+
+            if (error) {
+                console.error("Errore caricamento:", error);
+                document.getElementById('tessere-list').innerHTML = "<p class='error-msg'>Errore di connessione a Supabase.</p>";
+                return;
+            }
+
+            tutteLeTessere = data || [];
+            mostraTessere(tutteLeTessere);
+        }
+
+        function mostraTessere(lista) {
+            const container = document.getElementById('tessere-list');
+            if (lista.length === 0) {
+                container.innerHTML = "<p>Nessun abbonato trovato.</p>";
+                return;
+            }
+
+            let html = '';
+            lista.forEach(t => {
+                const nome = t.nome_tifoso || "Tifoso senza nome";
+                html += `
+                    <div class="user-card" id="card-${t.id}">
+                        <div class="user-info">
+                            <div>
+                                <span class="user-tessera">N° ${t.numero_tessera}</span>
+                                <div class="user-name">${nome}</div>
+                            </div>
+                            <div class="user-points" id="pts-display-${t.id}">${t.punti} pt</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 10)">+10</button>
+                            <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 15)">+15</button>
+                            <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 20)">+20</button>
+                            <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 50)">+50</button>
+                            <button class="btn-pts minus" onclick="modificaPunti(${t.id}, -10)">-10</button>
+                            <button class="btn-pts minus" onclick="modificaPunti(${t.id}, -15)">-15</button>
+                            <input type="number" class="custom-input" id="custom-${t.id}" placeholder="±Val">
+                            <button class="btn-pts" onclick="applicaCustom(${t.id})">OK</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function filtraTessere() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtrate = tutteLeTessere.filter(t => {
+                const nome = (t.nome_tifoso || "").toLowerCase();
+                const numero = String(t.numero_tessera || "");
+                return nome.includes(query) || numero.includes(query);
+            });
+            mostraTessere(filtrate);
+        }
+
+        async function modificaPunti(id, delta) {
+            const tessera = tutteLeTessere.find(t => t.id === id);
+            if (!tessera) return;
+
+            const nuovoTotale = (tessera.punti || 0) + delta;
+            await aggiornaPuntiNelDatabase(id, nuovoTotale);
+        }
+
+        async function applicaCustom(id) {
+            const inputVal = document.getElementById(`custom-${id}`).value;
+            if (!inputVal) return;
+            const delta = parseInt(inputVal);
+            const tessera = tutteLeTessere.find(t => t.id === id);
+            if (!tessera) return;
+
+            const nuovoTotale = (tessera.punti || 0) + delta;
+            await aggiornaPuntiNelDatabase(id, nuovoTotale);
+            document.getElementById(`custom-${id}`).value = '';
+        }
+
+        async function aggiornaPuntiNelDatabase(id, nuovoTotale) {
+            const { error } = await supabase
+                .from('Tessere')
+                .update({ punti: nuovoTotale })
+                .eq('id', id);
+
+            if (error) {
+                alert("Errore durante l'aggiornamento dei punti: " + error.message);
+                return;
+            }
+
+            // Aggiorna array locale e interfaccia senza ricaricare la pagina
+            const tessera = tutteLeTessere.find(t => t.id === id);
+            if (tessera) {
+                tessera.punti = nuovoTotale;
+            }
+            document.getElementById(`pts-display-${id}`).innerText = `${nuovoTotale} pt`;
+        }
+    </script>
+</body>
+</html>
