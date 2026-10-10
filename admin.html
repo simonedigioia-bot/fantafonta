@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - FantaFonta</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --verde-scuro: #006633;
@@ -203,11 +202,10 @@
     <script>
         const ADMIN_PIN = "1928";
         
-        // URL corretto ricavato dallo screenshot
-        const SUPABASE_URL = "https://xyvmovvcggbqracdkki.supabase.co";
+        // Credenziali ufficiali dal tuo progetto Supabase
+        const SUPABASE_URL = "https://xyvmovvcggbqracdkkki.supabase.co";
         const SUPABASE_ANON_KEY = "sb_pubblicabile_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
         
-        let supabaseClient = null;
         let tutteLeTessere = [];
 
         function verificaPin() {
@@ -218,7 +216,7 @@
                 errDiv.innerText = "";
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
-                caricaAbbonatiDizionario();
+                caricaAbbonatiAPI();
             } else {
                 errDiv.innerText = "PIN errato! Riprova.";
             }
@@ -230,28 +228,23 @@
             }
         });
 
-        async function caricaAbbonatiDizionario() {
+        async function caricaAbbonatiAPI() {
             const listElem = document.getElementById('tessere-list');
             listElem.innerHTML = "<p style='text-align:center;'>Connessione al database...</p>";
 
             try {
-                if (window.supabase) {
-                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                } else {
-                    listElem.innerHTML = "<p class='error-msg'>Libreria Supabase non caricata correttamente.</p>";
-                    return;
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/Tessere?select=*&order=numero_tessera.asc`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Errore HTTP: ${response.status}`);
                 }
 
-                const { data, error } = await supabaseClient
-                    .from('Tessere')
-                    .select('*')
-                    .order('numero_tessera', { ascending: true });
-
-                if (error) {
-                    listElem.innerHTML = `<p class='error-msg'>Errore database: ${error.message}</p>`;
-                    return;
-                }
-
+                const data = await response.json();
                 tutteLeTessere = data || [];
                 mostraTessere(tutteLeTessere);
             } catch (err) {
@@ -332,22 +325,31 @@
             const vecchioTesto = ptsDisplay.innerText;
             ptsDisplay.innerText = "...";
 
-            const { error } = await supabaseClient
-                .from('Tessere')
-                .update({ punti: nuovoTotale })
-                .eq('id', id);
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/Tessere?id=eq.${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({ punti: nuovoTotale })
+                });
 
-            if (error) {
-                alert("Errore aggiornamento punti: " + error.message);
+                if (!response.ok) {
+                    throw new Error("Errore salvataggio");
+                }
+
+                const tessera = tutteLeTessere.find(t => t.id === id);
+                if (tessera) {
+                    tessera.punti = nuovoTotale;
+                }
+                ptsDisplay.innerText = `${nuovoTotale} pt`;
+            } catch (err) {
+                alert("Errore aggiornamento punti: " + err.message);
                 ptsDisplay.innerText = vecchioTesto;
-                return;
             }
-
-            const tessera = tutteLeTessere.find(t => t.id === id);
-            if (tessera) {
-                tessera.punti = nuovoTotale;
-            }
-            ptsDisplay.innerText = `${nuovoTotale} pt`;
         }
     </script>
 </body>
