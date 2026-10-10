@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - FantaFonta</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --verde-scuro: #006633;
@@ -207,7 +206,6 @@
         const SUPABASE_URL = "https://xyvmovvcggbqracdkkki.supabase.co";
         const SUPABASE_ANON_KEY = "sb_pubblicabile_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
         
-        let supabaseClient = null;
         let tutteLeTessere = [];
 
         function verificaPin() {
@@ -218,7 +216,7 @@
                 errDiv.innerText = "";
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
-                caricaAbbonatiReali();
+                caricaAbbonatiNativo();
             } else {
                 errDiv.innerText = "PIN errato! Riprova.";
             }
@@ -230,44 +228,36 @@
             }
         });
 
-        async function caricaAbbonatiReali() {
+        // Caricamento dati 100% nativo senza librerie esterne
+        async function caricaAbbonatiNativo() {
             const listElem = document.getElementById('tessere-list');
-            listElem.innerHTML = "<p style='text-align:center;'>Connessione al database di FantaFonta...</p>";
+            listElem.innerHTML = "<p style='text-align:center;'>Connessione al database...</p>";
 
             try {
-                if (!window.supabase) {
-                    listElem.innerHTML = "<p class='error-msg'>Libreria Supabase non caricata.</p>";
-                    return;
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/Tessere?select=*&order=numero_tessera.asc`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Errore server: ${response.status}`);
                 }
 
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-                const { data, error } = await supabaseClient
-                    .from('Tessere')
-                    .select('*')
-                    .order('numero_tessera', { ascending: true });
-
-                if (error) {
-                    listElem.innerHTML = `<p class='error-msg'>Errore da Supabase: ${error.message}<br><small>Verifica che la tabella si chiami esattamente 'Tessere' e che abbia le politiche di lettura abilitate (RLS).</small></p>`;
-                    return;
-                }
-
-                if (!data || data.length === 0) {
-                    listElem.innerHTML = "<p style='text-align:center;'>La tabella 'Tessere' è vuota nel database.</p>";
-                    return;
-                }
-
-                tutteLeTessere = data;
+                const data = await response.json();
+                tutteLeTessere = data || [];
                 mostraTessere(tutteLeTessere);
             } catch (err) {
-                listElem.innerHTML = `<p class='error-msg'>Errore critico di connessione: ${err.message}</p>`;
+                listElem.innerHTML = `<p class='error-msg'>Impossibile caricare i dati: ${err.message}<br><small>Verifica la connessione o le regole di accesso della tabella 'Tessere'.</small></p>`;
             }
         }
 
         function mostraTessere(lista) {
             const container = document.getElementById('tessere-list');
             if (!lista || lista.length === 0) {
-                container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata.</p>";
+                container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata nel database.</p>";
                 return;
             }
 
@@ -318,4 +308,51 @@
             await aggiornaPuntiDB(id, nuovoTotale);
         }
 
-        async function applicaCustom
+        async function applicaCustom(id) {
+            const inputVal = document.getElementById(`custom-${id}`).value;
+            if (inputVal === '') return;
+            const delta = parseInt(inputVal, 10);
+            if (isNaN(delta)) return;
+
+            const tessera = tutteLeTessere.find(t => t.id === id);
+            if (!tessera) return;
+            const puntiAttuali = tessera.punti || 0;
+            const nuovoTotale = puntiAttuali + delta;
+            await aggiornaPuntiDB(id, nuovoTotale);
+            document.getElementById(`custom-${id}`).value = '';
+        }
+
+        async function aggiornaPuntiDB(id, nuovoTotale) {
+            const ptsDisplay = document.getElementById(`pts-display-${id}`);
+            const vecchioTesto = ptsDisplay.innerText;
+            ptsDisplay.innerText = "...";
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/Tessere?id=eq.${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({ punti: nuovoTotale })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Errore salvataggio");
+                }
+
+                const tessera = tutteLeTessere.find(t => t.id === id);
+                if (tessera) {
+                    tessera.punti = nuovoTotale;
+                }
+                ptsDisplay.innerText = `${nuovoTotale} pt`;
+            } catch (err) {
+                alert("Errore aggiornamento punti: " + err.message);
+                ptsDisplay.innerText = vecchioTesto;
+            }
+        }
+    </script>
+</body>
+</html>
