@@ -215,8 +215,8 @@
     <script>
         const ADMIN_PIN = "1928";
         
-        // URL E CHIAVE ESATTI CONFERMATI
-        const SUPABASE_URL = "https://xyyvmobvcggbqracdkkki.supabase.co";
+        // URL E CHIAVE ESATTI CORRETTI (con cdkki - 2 k)
+        const SUPABASE_URL = "https://xyyvmobvcggbqracdkki.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUGqNI4UygtYSRDA_wa7mVH4f";
         
         let supabaseClient = null;
@@ -254,14 +254,13 @@
                     throw new Error("Libreria Supabase non caricata.");
                 }
 
-                // Inizializza il client di Supabase con le credenziali corrette
+                // Inizializza il client Supabase con l'URL corretto
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-                // Scarica le tessere attive ordinate per numero
+                // Scarica tutte le tessere ordinate per numero
                 const { data, error } = await supabaseClient
                     .from('Tessere')
                     .select('*')
-                    .eq('attiva', true)
                     .order('numero_tessera', { ascending: true });
 
                 if (error) {
@@ -271,12 +270,12 @@
                 tutteLeTessere = data || [];
 
                 if (tutteLeTessere.length === 0) {
-                    container.innerHTML = "<p style='text-align:center;'>Nessuna tessera attiva trovata nel database.</p>";
-                    banner.innerText = "⚠️ Nessuna tessera attiva";
+                    container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata nel database.</p>";
+                    banner.innerText = "⚠️ Tabella vuota";
                     return;
                 }
 
-                banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} tessere attive caricate)`;
+                banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} abbonati caricate)`;
                 mostraTessere(tutteLeTessere);
             } catch (err) {
                 container.innerHTML = `<p class='error-msg'>Impossibile connettersi al database: ${err.message || err}</p>`;
