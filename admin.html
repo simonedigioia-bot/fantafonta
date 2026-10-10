@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - FantaFonta</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --verde-scuro: #006633;
@@ -92,18 +93,7 @@
             font-size: 16px;
             border: 2px solid #ddd;
             border-radius: 12px;
-            margin-bottom: 15px;
-        }
-
-        .mode-banner {
-            background: #e6f0eb;
-            color: var(--verde-scuro);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .user-card {
@@ -200,11 +190,10 @@
 
         <!-- SEZIONE GESTIONE ABBONATI -->
         <div id="admin-panel">
-            <div id="status-banner" class="mode-banner">Caricamento elenco in corso...</div>
             <input type="text" id="search-input" class="search-box" placeholder="Cerca per nome o numero tessera..." onkeyup="filtraTessere()">
             
             <div id="tessere-list">
-                <!-- Elenco dinamico -->
+                <p style="text-align:center;">Caricamento abbonati in corso...</p>
             </div>
         </div>
     </div>
@@ -213,20 +202,13 @@
 
     <script>
         const ADMIN_PIN = "1928";
-        const SUPABASE_URL = "https://xyvmovvcggbqracdkkki.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_pubblicabile_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
         
+        // Credenziali ufficiali dal tuo progetto Supabase
+        const SUPABASE_URL = "https://xyvmovvcggbqracdkkki.supabase.co";[cite: 7, 9, 13]
+        const SUPABASE_ANON_KEY = "sb_pubblicabile_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";[cite: 5, 11, 12]
+        
+        let supabaseClient = null;
         let tutteLeTessere = [];
-        let usandoDatabaseCloud = true;
-
-        // Elenco di riserva predefinito (per non bloccare mai il lavoro se la rete fa i capricci)
-        const tessereFallback = [
-            { id: 1, numero_tessera: "001", nome_tifoso: "Mario Rossi", punti: 50 },
-            { id: 2, numero_tessera: "002", nome_tifoso: "Giulia Bianchi", punti: 30 },
-            { id: 3, numero_tessera: "003", nome_tifoso: "Luca Verdi", punti: 75 },
-            { id: 4, numero_tessera: "004", nome_tifoso: "Francesca Neri", punti: 20 },
-            { id: 5, numero_tessera: "005", nome_tifoso: "Alessandro Gialli", punti: 100 }
-        ];
 
         function verificaPin() {
             const pinInserito = document.getElementById('pin-input').value.trim();
@@ -236,7 +218,7 @@
                 errDiv.innerText = "";
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
-                caricaAbbonati();
+                caricaAbbonatiSupabase();
             } else {
                 errDiv.innerText = "PIN errato! Riprova.";
             }
@@ -248,49 +230,33 @@
             }
         });
 
-        async function caricaAbbonati() {
-            const banner = document.getElementById('status-banner');
-            
-            // Tentativo di recupero dati salvati in locale nel browser (se presenti)
-            const salvatiLocali = localStorage.getItem('fanta_tessere_locali');
-            if (salvatiLocali) {
-                try {
-                    tutteLeTessere = JSON.parse(salvatiLocali);
-                    usandoDatabaseCloud = false;
-                    banner.innerText = "⚡ Modalità Rapida Locale attiva (modifiche salvate sul dispositivo)";
-                    mostraTessere(tutteLeTessere);
-                    return;
-                } catch(e) {}
-            }
+        async function caricaAbbonatiSupabase() {
+            const listElem = document.getElementById('tessere-list');
+            listElem.innerHTML = "<p style='text-align:center;'>Connessione al database...</p>";
 
-            // Tentativo di connessione a Supabase tramite API REST nativa (per evitare errori di libreria)
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/Tessere?select=*&order=numero_tessera.asc`, {
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                    }
-                });
-
-                if (!response.ok) throw new Error("Errore cloud");
-
-                const data = await response.json();
-                if (data && data.length > 0) {
-                    tutteLeTessere = data;
-                    usandoDatabaseCloud = true;
-                    banner.innerText = "🌐 Connesso al database cloud Supabase";
-                    mostraTessere(tutteLeTessere);
+                if (window.supabase) {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                } else {
+                    listElem.innerHTML = "<p class='error-msg'>Libreria Supabase non caricata.</p>";
                     return;
                 }
-            } catch (err) {
-                // Se il cloud fallisce, passa automaticamente al fallback locale senza mostrare errori bloccanti
-            }
 
-            // Fallback automatico se il cloud non risponde
-            tutteLeTessere = tessereFallback;
-            usandoDatabaseCloud = false;
-            banner.innerText = "⚡ Modalità Offline attiva (pronto all'uso)";
-            mostraTessere(tutteLeTessere);
+                const { data, error } = await supabaseClient
+                    .from('Tessere')
+                    .select('*')
+                    .order('numero_tessera', { ascending: true });
+
+                if (error) {
+                    listElem.innerHTML = `<p class='error-msg'>Errore database: ${error.message}</p>`;
+                    return;
+                }
+
+                tutteLeTessere = data || [];
+                mostraTessere(tutteLeTessere);
+            } catch (err) {
+                listElem.innerHTML = `<p class='error-msg'>Errore di connessione: ${err.message}</p>`;
+            }
         }
 
         function mostraTessere(lista) {
@@ -321,79 +287,3 @@
                             <button class="btn-pts minus" onclick="modificaPunti(${t.id}, -10)">-10</button>
                             <button class="btn-pts minus" onclick="modificaPunti(${t.id}, -15)">-15</button>
                             <input type="number" class="custom-input" id="custom-${t.id}" placeholder="±Val">
-                            <button class="btn-pts" onclick="applicaCustom(${t.id})">OK</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function filtraTessere() {
-            const query = document.getElementById('search-input').value.toLowerCase();
-            const filtrate = tutteLeTessere.filter(t => {
-                const nome = (t.nome_tifoso || "").toLowerCase();
-                const numero = String(t.numero_tessera || "");
-                return nome.includes(query) || numero.includes(query);
-            });
-            mostraTessere(filtrate);
-        }
-
-        async function modificaPunti(id, delta) {
-            const tessera = tutteLeTessere.find(t => t.id === id);
-            if (!tessera) return;
-            const puntiAttuali = tessera.punti || 0;
-            const nuovoTotale = puntiAttuali + delta;
-            await aggiornaPunti(id, nuovoTotale);
-        }
-
-        async function applicaCustom(id) {
-            const inputVal = document.getElementById(`custom-${id}`).value;
-            if (inputVal === '') return;
-            const delta = parseInt(inputVal, 10);
-            if (isNaN(delta)) return;
-
-            const tessera = tutteLeTessere.find(t => t.id === id);
-            if (!tessera) return;
-            const puntiAttuali = tessera.punti || 0;
-            const nuovoTotale = puntiAttuali + delta;
-            await aggiornaPunti(id, nuovoTotale);
-            document.getElementById(`custom-${id}`).value = '';
-        }
-
-        async function aggiornaPunti(id, nuovoTotale) {
-            const ptsDisplay = document.getElementById(`pts-display-${id}`);
-            const vecchioTesto = ptsDisplay.innerText;
-            ptsDisplay.innerText = "...";
-
-            const tessera = tutteLeTessere.find(t => t.id === id);
-            if (tessera) {
-                tessera.punti = nuovoTotale;
-            }
-
-            // Salva subito in locale per sicurezza immediata
-            localStorage.setItem('fanta_tessere_locali', JSON.stringify(tutteLeTessere));
-
-            // Se siamo in modalità cloud, prova ad aggiornare anche su Supabase in background
-            if (usandoDatabaseCloud) {
-                try {
-                    await fetch(`${SUPABASE_URL}/rest/v1/Tessere?id=eq.${id}`, {
-                        method: 'PATCH',
-                        headers: {
-                            'apikey': SUPABASE_ANON_KEY,
-                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                            'Content-Type': 'application/json',
-                            'Prefer': 'return=minimal'
-                        },
-                        body: JSON.stringify({ punti: nuovoTotale })
-                    });
-                } catch (e) {
-                    // Silenzioso: i punti sono comunque salvati in locale sul dispositivo
-                }
-            }
-
-            ptsDisplay.innerText = `${nuovoTotale} pt`;
-        }
-    </script>
-</body>
-</html>
