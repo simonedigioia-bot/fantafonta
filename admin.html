@@ -203,8 +203,8 @@
     <script>
         const ADMIN_PIN = "1928";
         
-        // Credenziali Supabase ufficiali del progetto
-        const SUPABASE_URL = "https://xyvmobvcggbqracdkkki.supabase.co";
+        // URL corretto ricavato dallo screenshot
+        const SUPABASE_URL = "https://xyvmovvcggbqracdkki.supabase.co";
         const SUPABASE_ANON_KEY = "sb_pubblicabile_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
         
         let supabaseClient = null;
@@ -255,7 +255,7 @@
                 tutteLeTessere = data || [];
                 mostraTessere(tutteLeTessere);
             } catch (err) {
-                listElem.innerHTML = `<p class='error-msg'>Errore di rete: Impossibile contattare Supabase. Verifica eventuali AdBlock attivi.</p>`;
+                listElem.innerHTML = `<p class='error-msg'>Errore di connessione: ${err.message}</p>`;
             }
         }
 
