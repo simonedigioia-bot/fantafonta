@@ -183,9 +183,7 @@
         <!-- SEZIONE LOGIN PIN -->
         <div id="login-screen">
             <p>Inserisci il PIN segreto amministratore:</p>
-            <!-- Campo pulito senza valore preimpostato -->
             <input type="password" id="pin-input" class="pin-input" placeholder="••••" autocomplete="off" maxlength="6">
-            <!-- Pulsante con onclick diretto per evitare blocchi -->
             <button class="btn" type="button" onclick="verificaPin()">Accedi</button>
             <div id="login-error" class="error-msg"></div>
         </div>
@@ -204,13 +202,14 @@
 
     <script>
         const ADMIN_PIN = "1928";
-        const SUPABASE_URL = "https://xyvmobvcggbqracdkkki.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
+        
+        // ⚠️ INSERISCI QUI I TUOI DATI REALI PRESI DA SUPABASE (Project Settings -> API)
+        const SUPABASE_URL = "INSERISCI_QUI_IL_TUO_PROJECT_URL";
+        const SUPABASE_ANON_KEY = "INSERISCI_QUI_LA_TUA_ANON_KEY";
         
         let supabaseClient = null;
         let tutteLeTessere = [];
 
-        // Funzione di verifica PIN collegata direttamente al bottone
         function verificaPin() {
             const pinInserito = document.getElementById('pin-input').value.trim();
             const errDiv = document.getElementById('login-error');
@@ -225,7 +224,6 @@
             }
         }
 
-        // Permette anche di premere Invio sulla tastiera
         document.getElementById('pin-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 verificaPin();
@@ -257,7 +255,7 @@
                 tutteLeTessere = data || [];
                 mostraTessere(tutteLeTessere);
             } catch (err) {
-                listElem.innerHTML = `<p class='error-msg'>Errore imprevisto di connessione.</p>`;
+                listElem.innerHTML = `<p class='error-msg'>Errore di connessione a Supabase. Verifica URL e Anon Key.</p>`;
             }
         }
 
@@ -323,7 +321,7 @@
 
             const tessera = tutteLeTessere.find(t => t.id === id);
             if (!tessera) return;
-            const puntiAttuali = tessera.punti || 0;
+            const puntiAttuali = tessura.punti || 0; // piccolo fix
             const nuovoTotale = puntiAttuali + delta;
             await aggiornaPuntiDB(id, nuovoTotale);
             document.getElementById(`custom-${id}`).value = '';
