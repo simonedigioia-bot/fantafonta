@@ -214,8 +214,10 @@
 
     <script>
         const ADMIN_PIN = "1928";
-        const SUPABASE_URL = "https://xyvmovvcggbqracdkkki.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_pubblicabile_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
+        
+        // URL E CHIAVE ESATTI RECUPERATI DAI FILE DEL PROGETTO
+        const SUPABASE_URL = "https://xyvmobvcggbqracdkkki.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
         
         let supabaseClient = null;
         let tutteLeTessere = [];
@@ -247,14 +249,13 @@
         async function caricaTessereReali() {
             const container = document.getElementById('tessere-list');
             const banner = document.getElementById('status-banner');
-            container.innerHTML = "<p style='text-align:center;'>Caricamento elenco dal database...</p>";
+            container.innerHTML = "<p style='text-align:center;'>Caricamento tessere dal database FantaFonta...</p>";
 
             try {
                 if (!window.supabase) {
-                    throw new Error("Libreria Supabase non caricata correttamente.");
+                    throw new Error("Libreria Supabase non caricata.");
                 }
 
-                // Inizializzazione client ufficiale con supporto alle nuove chiavi
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
                 const { data, error } = await supabaseClient
