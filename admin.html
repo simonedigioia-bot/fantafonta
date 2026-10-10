@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - FantaFonta</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --verde-scuro: #006633;
@@ -73,12 +72,13 @@
             background-color: var(--verde-scuro);
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 16px;
+            padding: 14px 35px;
+            font-size: 18px;
             font-weight: 700;
             border-radius: 12px;
             cursor: pointer;
             transition: background 0.2s;
+            width: 220px;
         }
 
         .btn:hover { background-color: #004d26; }
@@ -182,8 +182,8 @@
         <!-- SEZIONE LOGIN PIN -->
         <div id="login-screen">
             <p>Inserisci il PIN segreto amministratore:</p>
-            <input type="password" id="pin-input" class="pin-input" placeholder="PIN" autocomplete="off">
-            <button class="btn" id="btn-accedi" type="button">Accedi</button>
+            <input type="text" id="pin-input" class="pin-input" placeholder="1928" autocomplete="off">
+            <button class="btn" id="btn-accedi">Accedi</button>
             <div id="login-error" class="error-msg"></div>
         </div>
 
@@ -199,53 +199,49 @@
 
     <a href="index.html" class="nav-back">← Torna al sito principale</a>
 
+    <!-- Caricamento libreria Supabase in fondo al body -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script>
+        const ADMIN_PIN = "1928";
         const SUPABASE_URL = "https://xyvmobvcggbqracdkkki.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
         
-        let supabase;
-        try {
-            if (window.supabase) {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            }
-        } catch (e) {
-            console.error("Errore init Supabase:", e);
-        }
-
-        const ADMIN_PIN = "1928"; 
+        let supabase = null;
         let tutteLeTessere = [];
 
-        function eseguiLogin() {
-            const inputElem = document.getElementById('pin-input');
-            const errElem = document.getElementById('login-error');
-            const pinInserito = String(inputElem.value).trim();
+        // Funzione di accesso immediata
+        function verificaEAccedi() {
+            const val = document.getElementById('pin-input').value.trim();
+            const err = document.getElementById('login-error');
 
-            if (pinInserito === ADMIN_PIN) {
-                errElem.innerText = "";
-                // Sblocca subito la grafica indipendentemente dalle chiamate di rete
+            if (val === ADMIN_PIN) {
+                err.innerText = "";
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
-                caricaAbbonatiSupabase();
+                inipSupabaseECarica();
             } else {
-                errElem.innerText = "PIN errato! Riprova.";
+                err.innerText = "PIN errato! Riprova.";
             }
         }
 
-        document.getElementById('btn-accedi').onclick = eseguiLogin;
+        // Event listener diretto per evitare problemi di click
+        document.getElementById('btn-accedi').addEventListener('click', verificaEAccedi);
 
-        document.getElementById('pin-input').addEventListener('keydown', function (e) {
+        document.getElementById('pin-input').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                eseguiLogin();
+                verificaEAccedi();
             }
         });
 
-        async function caricaAbbonatiSupabase() {
+        async function inipSupabaseECarica() {
             const listElem = document.getElementById('tessere-list');
-            listElem.innerHTML = "<p style='text-align:center;'>Caricamento dal database...</p>";
-
-            if (!supabase) {
-                listElem.innerHTML = "<p class='error-msg'>Libreria Supabase non caricata. Verifica la connessione internet.</p>";
+            
+            if (window.supabase) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } else {
+                listElem.innerHTML = "<p class='error-msg'>Errore: Libreria Supabase non disponibile.</p>";
                 return;
             }
 
@@ -256,23 +252,21 @@
                     .order('numero_tessera', { ascending: true });
 
                 if (error) {
-                    console.error("Errore Supabase:", error);
-                    listElem.innerHTML = `<p class='error-msg'>Errore accesso database: ${error.message}<br><br><small>Verifica che la tabella 'Tessere' su Supabase abbia le policy RLS attive per la SELECT e UPDATE.</small></p>`;
+                    listElem.innerHTML = `<p class='error-msg'>Errore caricamento: ${error.message}</p>`;
                     return;
                 }
 
                 tutteLeTessere = data || [];
                 mostraTessere(tutteLeTessere);
             } catch (err) {
-                console.error("Errore generico:", err);
-                listElem.innerHTML = `<p class='error-msg'>Si è verificato un errore durante il caricamento.</p>`;
+                listElem.innerHTML = `<p class='error-msg'>Errore imprevisto durante il caricamento.</p>`;
             }
         }
 
         function mostraTessere(lista) {
             const container = document.getElementById('tessere-list');
             if (!lista || lista.length === 0) {
-                container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata nel database.</p>";
+                container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata.</p>";
                 return;
             }
 
@@ -350,7 +344,7 @@
                 .eq('id', id);
 
             if (error) {
-                alert("Errore nell'aggiornamento dei punti su Supabase: " + error.message + "\nAssicurati che RLS permetta le UPDATE sulla tabella Tessere.");
+                alert("Errore nell'aggiornamento dei punti: " + error.message);
                 ptsDisplay.innerText = vecchioTesto;
                 return;
             }
