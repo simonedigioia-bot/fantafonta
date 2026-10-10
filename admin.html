@@ -203,9 +203,11 @@
     <script>
         const ADMIN_PIN = "1928";
         
-        // Credenziali Supabase estratte dal tuo progetto
+        // URL del tuo progetto Supabase
         const SUPABASE_URL = "https://xyvmobvcggbqracdkkki.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_pubblicabile_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
+        
+        // ⚠️ INSERISCI QUI LA TUA CHIAVE ANON LEGACY (inizia con "eyJ...")
+        const SUPABASE_ANON_KEY = "INSERISCI_QUI_LA_TUA_CHIAVE_ANON_eyJ...";
         
         let supabaseClient = null;
         let tutteLeTessere = [];
@@ -255,7 +257,7 @@
                 tutteLeTessere = data || [];
                 mostraTessere(tutteLeTessere);
             } catch (err) {
-                listElem.innerHTML = `<p class='error-msg'>Errore di connessione a Supabase. Controlla la console.</p>`;
+                listElem.innerHTML = `<p class='error-msg'>Errore di connessione a Supabase. Controlla la chiave Anon Legacy.</p>`;
             }
         }
 
