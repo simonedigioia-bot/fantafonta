@@ -205,7 +205,7 @@
             <input type="text" id="search-input" class="search-box" placeholder="Cerca per nome o numero tessera..." onkeyup="filtraTessere()">
             
             <div id="tessere-list">
-                <!-- Elenco reale dal database -->
+                <!-- Elenco dinamico letto direttamente dal database -->
             </div>
         </div>
     </div>
@@ -215,16 +215,14 @@
     <script>
         const ADMIN_PIN = "1928";
         
-        // URL E CHIAVE ESATTI RECUPERATI DAI FILE DEL PROGETTO
-        const SUPABASE_URL = "https://xyvmobvcggbqracdkkki.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
+        // URL E CHIAVE ESATTI CONFERMATI
+        const SUPABASE_URL = "https://xyyvmobvcggbqracdkkki.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUGqNI4UygtYSRDA_wa7mVH4f";
         
         let supabaseClient = null;
         let tutteLeTessere = [];
 
-        document.getElementById('btn-accedi').addEventListener('click', function() {
-            eseguiLogin();
-        });
+        document.getElementById('btn-accedi').addEventListener('click', eseguiLogin);
 
         document.getElementById('pin-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
@@ -240,27 +238,30 @@
                 errDiv.innerText = "";
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
-                caricaTessereReali();
+                caricaTessereDaDatabase();
             } else {
                 errDiv.innerText = "PIN errato! Riprova.";
             }
         }
 
-        async function caricaTessereReali() {
+        async function caricaTessereDaDatabase() {
             const container = document.getElementById('tessere-list');
             const banner = document.getElementById('status-banner');
-            container.innerHTML = "<p style='text-align:center;'>Caricamento tessere dal database FantaFonta...</p>";
+            container.innerHTML = "<p style='text-align:center;'>Lettura tessere in corso dal database Supabase...</p>";
 
             try {
                 if (!window.supabase) {
                     throw new Error("Libreria Supabase non caricata.");
                 }
 
+                // Inizializza il client di Supabase con le credenziali corrette
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+                // Scarica le tessere attive ordinate per numero
                 const { data, error } = await supabaseClient
                     .from('Tessere')
                     .select('*')
+                    .eq('attiva', true)
                     .order('numero_tessera', { ascending: true });
 
                 if (error) {
@@ -270,12 +271,12 @@
                 tutteLeTessere = data || [];
 
                 if (tutteLeTessere.length === 0) {
-                    container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata nella tabella.</p>";
-                    banner.innerText = "⚠️ Tabella vuota";
+                    container.innerHTML = "<p style='text-align:center;'>Nessuna tessera attiva trovata nel database.</p>";
+                    banner.innerText = "⚠️ Nessuna tessera attiva";
                     return;
                 }
 
-                banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} abbonati caricati)`;
+                banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} tessere attive caricate)`;
                 mostraTessere(tutteLeTessere);
             } catch (err) {
                 container.innerHTML = `<p class='error-msg'>Impossibile connettersi al database: ${err.message || err}</p>`;
@@ -372,7 +373,7 @@
                 }
                 ptsDisplay.innerText = `${nuovoTotale} pt`;
             } catch (err) {
-                alert("Errore aggiornamento punti: " + (err.message || err));
+                alert("Errore durante l'aggiornamento su Supabase: " + (err.message || err));
                 ptsDisplay.innerText = vecchioTesto;
             }
         }
