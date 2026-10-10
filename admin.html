@@ -37,15 +37,16 @@
             margin-top: 20px;
         }
 
-        h1, h2 {
+        h1 {
             font-family: 'Anton', sans-serif;
             color: var(--verde-scuro);
             text-transform: uppercase;
             letter-spacing: 1px;
             text-align: center;
+            font-size: 36px;
+            margin-bottom: 5px;
         }
 
-        h1 { font-size: 36px; margin-bottom: 5px; }
         p { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
 
         /* Schermata Login PIN */
@@ -54,24 +55,25 @@
             flex-direction: column;
             align-items: center;
             gap: 15px;
-            padding: 40px 0;
+            padding: 20px 0;
         }
 
         .pin-input {
             font-size: 28px;
             text-align: center;
             padding: 12px;
-            width: 200px;
+            width: 220px;
             border: 2px solid #ccc;
             border-radius: 12px;
-            letter-spacing: 8px;
+            letter-spacing: 6px;
+            font-family: inherit;
         }
 
         .btn {
             background-color: var(--verde-scuro);
             color: white;
             border: none;
-            padding: 12px 25px;
+            padding: 12px 30px;
             font-size: 16px;
             font-weight: 700;
             border-radius: 12px;
@@ -158,7 +160,7 @@
             font-size: 14px;
         }
 
-        .error-msg { color: #dc2626; font-size: 14px; margin-top: 5px; }
+        .error-msg { color: #dc2626; font-size: 14px; margin-top: 5px; text-align: center; font-weight: 600; }
         
         .nav-back {
             display: block;
@@ -180,7 +182,7 @@
         <!-- SEZIONE LOGIN PIN -->
         <div id="login-screen">
             <p>Inserisci il PIN segreto amministratore:</p>
-            <input type="password" id="pin-input" class="pin-input" maxlength="6" placeholder="••••">
+            <input type="password" id="pin-input" class="pin-input" placeholder="PIN" autocomplete="off">
             <button class="btn" onclick="verificaPin()">Accedi</button>
             <div id="login-error" class="error-msg"></div>
         </div>
@@ -190,7 +192,7 @@
             <input type="text" id="search-input" class="search-box" placeholder="Cerca per nome o numero tessera..." onkeyup="filtraTessere()">
             
             <div id="tessere-list">
-                <p>Caricamento abbonati in corso...</p>
+                <p style="text-align:center;">Caricamento abbonati in corso...</p>
             </div>
         </div>
     </div>
@@ -201,63 +203,90 @@
         // CONFIGURAZIONE SUPABASE
         const SUPABASE_URL = "https://xyvmobvcggbqracdkkki.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (e) {
+            console.error("Errore inizializzazione Supabase:", e);
+        }
 
-        // PIN DI ACCESSO (Puoi cambiarlo qui quando vuoi)
+        // PIN DI ACCESSO
         const ADMIN_PIN = "1928"; 
 
         let tutteLeTessere = [];
 
         function verificaPin() {
-            const pinInserito = document.getElementById('pin-input').value;
+            const inputElem = document.getElementById('pin-input');
+            const errElem = document.getElementById('login-error');
+            const pinInserito = String(inputElem.value).trim();
+
             if (pinInserito === ADMIN_PIN) {
+                errElem.innerText = "";
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
                 caricaAbbonatiSupabase();
             } else {
-                document.getElementById('login-error').innerText = "PIN errato! Riprova.";
+                errElem.innerText = "PIN errato! Riprova.";
             }
         }
 
-        // Permetti invio con tasto Invio sul PIN
-        document.getElementById('pin-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') verificaPin();
+        // Tasto Invio sul campo PIN
+        document.getElementById('pin-input').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                verificaPin();
+            }
         });
 
         async function caricaAbbonatiSupabase() {
-            const { data, error } = await supabase
-                .from('Tessere')
-                .select('*')
-                .order('numero_tessera', { ascending: true });
+            const listElem = document.getElementById('tessere-list');
+            listElem.innerHTML = "<p style='text-align:center;'>Caricamento dal database...</p>";
 
-            if (error) {
-                console.error("Errore caricamento:", error);
-                document.getElementById('tessere-list').innerHTML = "<p class='error-msg'>Errore di connessione a Supabase.</p>";
+            if (!supabase) {
+                listElem.innerHTML = "<p class='error-msg'>Impossibile connettersi a Supabase (Libreria non caricata).</p>";
                 return;
             }
 
-            tutteLeTessere = data || [];
-            mostraTessere(tutteLeTessere);
+            try {
+                const { data, error } = await supabase
+                    .from('Tessere')
+                    .select('*')
+                    .order('numero_tessera', { ascending: true });
+
+                if (error) {
+                    console.error("Errore Supabase:", error);
+                    listElem.innerHTML = `<p class='error-msg'>Errore database: ${error.message}</p>`;
+                    return;
+                }
+
+                tutteLeTessere = data || [];
+                mostraTessere(tutteLeTessere);
+            } catch (err) {
+                console.error("Errore generico:", err);
+                listElem.innerHTML = `<p class='error-msg'>Errore imprevisto durante il caricamento.</p>`;
+            }
         }
 
         function mostraTessere(lista) {
             const container = document.getElementById('tessere-list');
-            if (lista.length === 0) {
-                container.innerHTML = "<p>Nessun abbonato trovato.</p>";
+            if (!lista || lista.length === 0) {
+                container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata.</p>";
                 return;
             }
 
             let html = '';
             lista.forEach(t => {
                 const nome = t.nome_tifoso || "Tifoso senza nome";
+                const punti = t.punti !== undefined && t.punti !== null ? t.punti : 0;
                 html += `
                     <div class="user-card" id="card-${t.id}">
                         <div class="user-info">
                             <div>
-                                <span class="user-tessera">N° ${t.numero_tessera}</span>
+                                <span class="user-tessera">Tessera N° ${t.numero_tessera}</span>
                                 <div class="user-name">${nome}</div>
                             </div>
-                            <div class="user-points" id="pts-display-${t.id}">${t.punti} pt</div>
+                            <div class="user-points" id="pts-display-${t.id}">${punti} pt</div>
                         </div>
                         <div class="action-buttons">
                             <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 10)">+10</button>
@@ -289,39 +318,47 @@
             const tessera = tutteLeTessere.find(t => t.id === id);
             if (!tessera) return;
 
-            const nuovoTotale = (tessera.punti || 0) + delta;
+            const puntiAttuali = tessera.punti !== undefined && tessera.punti !== null ? tessera.punti : 0;
+            const nuovoTotale = puntiAttuali + delta;
             await aggiornaPuntiNelDatabase(id, nuovoTotale);
         }
 
         async function applicaCustom(id) {
             const inputVal = document.getElementById(`custom-${id}`).value;
-            if (!inputVal) return;
-            const delta = parseInt(inputVal);
+            if (inputVal === '') return;
+            const delta = parseInt(inputVal, 10);
+            if (isNaN(delta)) return;
+
             const tessera = tutteLeTessere.find(t => t.id === id);
             if (!tessera) return;
 
-            const nuovoTotale = (tessera.punti || 0) + delta;
+            const puntiAttuali = tessera.punti !== undefined && tessera.punti !== null ? tessera.punti : 0;
+            const nuovoTotale = puntiAttuali + delta;
             await aggiornaPuntiNelDatabase(id, nuovoTotale);
             document.getElementById(`custom-${id}`).value = '';
         }
 
         async function aggiornaPuntiNelDatabase(id, nuovoTotale) {
+            const ptsDisplay = document.getElementById(`pts-display-${id}`);
+            const vecchioTesto = ptsDisplay.innerText;
+            ptsDisplay.innerText = "Saving...";
+
             const { error } = await supabase
                 .from('Tessere')
                 .update({ punti: nuovoTotale })
                 .eq('id', id);
 
             if (error) {
-                alert("Errore durante l'aggiornamento dei punti: " + error.message);
+                alert("Errore aggiornamento punti: " + error.message);
+                ptsDisplay.innerText = vecchioTesto;
                 return;
             }
 
-            // Aggiorna array locale e interfaccia senza ricaricare la pagina
             const tessera = tutteLeTessere.find(t => t.id === id);
             if (tessera) {
                 tessera.punti = nuovoTotale;
             }
-            document.getElementById(`pts-display-${id}`).innerText = `${nuovoTotale} pt`;
+            ptsDisplay.innerText = `${nuovoTotale} pt`;
         }
     </script>
 </body>
