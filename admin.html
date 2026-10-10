@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - FantaFonta</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --verde-scuro: #006633;
@@ -182,8 +183,10 @@
         <!-- SEZIONE LOGIN PIN -->
         <div id="login-screen">
             <p>Inserisci il PIN segreto amministratore:</p>
-            <input type="text" id="pin-input" class="pin-input" placeholder="1928" autocomplete="off">
-            <button class="btn" id="btn-accedi">Accedi</button>
+            <!-- Campo pulito senza valore preimpostato -->
+            <input type="password" id="pin-input" class="pin-input" placeholder="••••" autocomplete="off" maxlength="6">
+            <!-- Pulsante con onclick diretto per evitare blocchi -->
+            <button class="btn" type="button" onclick="verificaPin()">Accedi</button>
             <div id="login-error" class="error-msg"></div>
         </div>
 
@@ -199,67 +202,62 @@
 
     <a href="index.html" class="nav-back">← Torna al sito principale</a>
 
-    <!-- Caricamento libreria Supabase in fondo al body -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script>
         const ADMIN_PIN = "1928";
         const SUPABASE_URL = "https://xyvmobvcggbqracdkkki.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
         
-        let supabase = null;
+        let supabaseClient = null;
         let tutteLeTessere = [];
 
-        // Funzione di accesso immediata
-        function verificaEAccedi() {
-            const val = document.getElementById('pin-input').value.trim();
-            const err = document.getElementById('login-error');
+        // Funzione di verifica PIN collegata direttamente al bottone
+        function verificaPin() {
+            const pinInserito = document.getElementById('pin-input').value.trim();
+            const errDiv = document.getElementById('login-error');
 
-            if (val === ADMIN_PIN) {
-                err.innerText = "";
+            if (pinInserito === ADMIN_PIN) {
+                errDiv.innerText = "";
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
-                inipSupabaseECarica();
+                caricaAbbonatiDizionario();
             } else {
-                err.innerText = "PIN errato! Riprova.";
+                errDiv.innerText = "PIN errato! Riprova.";
             }
         }
 
-        // Event listener diretto per evitare problemi di click
-        document.getElementById('btn-accedi').addEventListener('click', verificaEAccedi);
-
-        document.getElementById('pin-input').addEventListener('keydown', function(e) {
+        // Permette anche di premere Invio sulla tastiera
+        document.getElementById('pin-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
-                e.preventDefault();
-                verificaEAccedi();
+                verificaPin();
             }
         });
 
-        async function inipSupabaseECarica() {
+        async function caricaAbbonatiDizionario() {
             const listElem = document.getElementById('tessere-list');
-            
-            if (window.supabase) {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            } else {
-                listElem.innerHTML = "<p class='error-msg'>Errore: Libreria Supabase non disponibile.</p>";
-                return;
-            }
+            listElem.innerHTML = "<p style='text-align:center;'>Connessione al database...</p>";
 
             try {
-                const { data, error } = await supabase
+                if (window.supabase) {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                } else {
+                    listElem.innerHTML = "<p class='error-msg'>Libreria Supabase non caricata.</p>";
+                    return;
+                }
+
+                const { data, error } = await supabaseClient
                     .from('Tessere')
                     .select('*')
                     .order('numero_tessera', { ascending: true });
 
                 if (error) {
-                    listElem.innerHTML = `<p class='error-msg'>Errore caricamento: ${error.message}</p>`;
+                    listElem.innerHTML = `<p class='error-msg'>Errore database: ${error.message}</p>`;
                     return;
                 }
 
                 tutteLeTessere = data || [];
                 mostraTessere(tutteLeTessere);
             } catch (err) {
-                listElem.innerHTML = `<p class='error-msg'>Errore imprevisto durante il caricamento.</p>`;
+                listElem.innerHTML = `<p class='error-msg'>Errore imprevisto di connessione.</p>`;
             }
         }
 
@@ -312,10 +310,9 @@
         async function modificaPunti(id, delta) {
             const tessera = tutteLeTessere.find(t => t.id === id);
             if (!tessera) return;
-
-            const puntiAttuali = tessera.punti !== undefined && tessera.punti !== null ? tessera.punti : 0;
+            const puntiAttuali = tessera.punti || 0;
             const nuovoTotale = puntiAttuali + delta;
-            await aggiornaPuntiNelDatabase(id, nuovoTotale);
+            await aggiornaPuntiDB(id, nuovoTotale);
         }
 
         async function applicaCustom(id) {
@@ -326,25 +323,24 @@
 
             const tessera = tutteLeTessere.find(t => t.id === id);
             if (!tessera) return;
-
-            const puntiAttuali = tessera.punti !== undefined && tessera.punti !== null ? tessera.punti : 0;
+            const puntiAttuali = tessera.punti || 0;
             const nuovoTotale = puntiAttuali + delta;
-            await aggiornaPuntiNelDatabase(id, nuovoTotale);
+            await aggiornaPuntiDB(id, nuovoTotale);
             document.getElementById(`custom-${id}`).value = '';
         }
 
-        async function aggiornaPuntiNelDatabase(id, nuovoTotale) {
+        async function aggiornaPuntiDB(id, nuovoTotale) {
             const ptsDisplay = document.getElementById(`pts-display-${id}`);
             const vecchioTesto = ptsDisplay.innerText;
             ptsDisplay.innerText = "...";
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('Tessere')
                 .update({ punti: nuovoTotale })
                 .eq('id', id);
 
             if (error) {
-                alert("Errore nell'aggiornamento dei punti: " + error.message);
+                alert("Errore aggiornamento punti: " + error.message);
                 ptsDisplay.innerText = vecchioTesto;
                 return;
             }
