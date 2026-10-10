@@ -183,7 +183,7 @@
         <div id="login-screen">
             <p>Inserisci il PIN segreto amministratore:</p>
             <input type="password" id="pin-input" class="pin-input" placeholder="PIN" autocomplete="off">
-            <button class="btn" onclick="verificaPin()">Accedi</button>
+            <button class="btn" id="btn-accedi" type="button">Accedi</button>
             <div id="login-error" class="error-msg"></div>
         </div>
 
@@ -200,29 +200,29 @@
     <a href="index.html" class="nav-back">← Torna al sito principale</a>
 
     <script>
-        // CONFIGURAZIONE SUPABASE
         const SUPABASE_URL = "https://xyvmobvcggbqracdkkki.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
         
         let supabase;
         try {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            if (window.supabase) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
         } catch (e) {
-            console.error("Errore inizializzazione Supabase:", e);
+            console.error("Errore init Supabase:", e);
         }
 
-        // PIN DI ACCESSO
         const ADMIN_PIN = "1928"; 
-
         let tutteLeTessere = [];
 
-        function verificaPin() {
+        function eseguiLogin() {
             const inputElem = document.getElementById('pin-input');
             const errElem = document.getElementById('login-error');
             const pinInserito = String(inputElem.value).trim();
 
             if (pinInserito === ADMIN_PIN) {
                 errElem.innerText = "";
+                // Sblocca subito la grafica indipendentemente dalle chiamate di rete
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
                 caricaAbbonatiSupabase();
@@ -231,11 +231,12 @@
             }
         }
 
-        // Tasto Invio sul campo PIN
+        document.getElementById('btn-accedi').onclick = eseguiLogin;
+
         document.getElementById('pin-input').addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                verificaPin();
+                eseguiLogin();
             }
         });
 
@@ -244,7 +245,7 @@
             listElem.innerHTML = "<p style='text-align:center;'>Caricamento dal database...</p>";
 
             if (!supabase) {
-                listElem.innerHTML = "<p class='error-msg'>Impossibile connettersi a Supabase (Libreria non caricata).</p>";
+                listElem.innerHTML = "<p class='error-msg'>Libreria Supabase non caricata. Verifica la connessione internet.</p>";
                 return;
             }
 
@@ -256,7 +257,7 @@
 
                 if (error) {
                     console.error("Errore Supabase:", error);
-                    listElem.innerHTML = `<p class='error-msg'>Errore database: ${error.message}</p>`;
+                    listElem.innerHTML = `<p class='error-msg'>Errore accesso database: ${error.message}<br><br><small>Verifica che la tabella 'Tessere' su Supabase abbia le policy RLS attive per la SELECT e UPDATE.</small></p>`;
                     return;
                 }
 
@@ -264,14 +265,14 @@
                 mostraTessere(tutteLeTessere);
             } catch (err) {
                 console.error("Errore generico:", err);
-                listElem.innerHTML = `<p class='error-msg'>Errore imprevisto durante il caricamento.</p>`;
+                listElem.innerHTML = `<p class='error-msg'>Si è verificato un errore durante il caricamento.</p>`;
             }
         }
 
         function mostraTessere(lista) {
             const container = document.getElementById('tessere-list');
             if (!lista || lista.length === 0) {
-                container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata.</p>";
+                container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata nel database.</p>";
                 return;
             }
 
@@ -341,7 +342,7 @@
         async function aggiornaPuntiNelDatabase(id, nuovoTotale) {
             const ptsDisplay = document.getElementById(`pts-display-${id}`);
             const vecchioTesto = ptsDisplay.innerText;
-            ptsDisplay.innerText = "Saving...";
+            ptsDisplay.innerText = "...";
 
             const { error } = await supabase
                 .from('Tessere')
@@ -349,7 +350,7 @@
                 .eq('id', id);
 
             if (error) {
-                alert("Errore aggiornamento punti: " + error.message);
+                alert("Errore nell'aggiornamento dei punti su Supabase: " + error.message + "\nAssicurati che RLS permetta le UPDATE sulla tabella Tessere.");
                 ptsDisplay.innerText = vecchioTesto;
                 return;
             }
