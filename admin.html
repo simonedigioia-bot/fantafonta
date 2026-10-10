@@ -203,11 +203,9 @@
     <script>
         const ADMIN_PIN = "1928";
         
-        // URL del tuo progetto Supabase
+        // Credenziali Supabase ufficiali del progetto
         const SUPABASE_URL = "https://xyvmobvcggbqracdkkki.supabase.co";
-        
-        // ⚠️ INSERISCI QUI LA TUA CHIAVE ANON LEGACY (inizia con "eyJ...")
-        const SUPABASE_ANON_KEY = "INSERISCI_QUI_LA_TUA_CHIAVE_ANON_eyJ...";
+        const SUPABASE_ANON_KEY = "sb_pubblicabile_AuD-8UcUgQNI4UygTYSRDA_wa7mVH4f";
         
         let supabaseClient = null;
         let tutteLeTessere = [];
@@ -240,7 +238,7 @@
                 if (window.supabase) {
                     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 } else {
-                    listElem.innerHTML = "<p class='error-msg'>Libreria Supabase non caricata.</p>";
+                    listElem.innerHTML = "<p class='error-msg'>Libreria Supabase non caricata correttamente.</p>";
                     return;
                 }
 
@@ -257,7 +255,7 @@
                 tutteLeTessere = data || [];
                 mostraTessere(tutteLeTessere);
             } catch (err) {
-                listElem.innerHTML = `<p class='error-msg'>Errore di connessione a Supabase. Controlla la chiave Anon Legacy.</p>`;
+                listElem.innerHTML = `<p class='error-msg'>Errore di rete: Impossibile contattare Supabase. Verifica eventuali AdBlock attivi.</p>`;
             }
         }
 
