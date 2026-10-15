@@ -172,12 +172,6 @@
             font-size: 14px;
         }
 
-        .card-status {
-            font-size: 12px;
-            font-weight: 600;
-            margin-top: 4px;
-        }
-
         .error-msg { color: #dc2626; font-size: 14px; margin-top: 10px; text-align: center; font-weight: 600; line-height: 1.4; }
         
         .nav-back {
@@ -211,7 +205,7 @@
             <input type="text" id="search-input" class="search-box" placeholder="Cerca per nome o numero tessera..." onkeyup="filtraTessere()">
             
             <div id="tessere-list">
-                <!-- Elenco dinamico -->
+                <!-- Elenco dinamico letto direttamente dal database -->
             </div>
         </div>
     </div>
@@ -219,187 +213,169 @@
     <a href="index.html" class="nav-back">← Torna al sito principale</a>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const ADMIN_PIN = "1928";
-            const SUPABASE_URL = "https://xyyvmobvcggbqracdkkki.supabase.co";
-            const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUGqNI4UygtYSRDA_wa7mVH4f";
-            
-            let supabase = null;
+        const ADMIN_PIN = "1928";
+        
+        // URL E CHIAVE ESATTI CORRETTI (con cdkki - 2 k)
+        const SUPABASE_URL = "https://xyyvmobvcggbqracdkki.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUGqNI4UygtYSRDA_wa7mVH4f";
+        
+        let supabaseClient = null;
+        let tutteLeTessere = [];
+
+        document.getElementById('btn-accedi').addEventListener('click', eseguiLogin);
+
+        document.getElementById('pin-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                eseguiLogin();
+            }
+        });
+
+        function eseguiLogin() {
+            const pinInserito = document.getElementById('pin-input').value.trim();
+            const errDiv = document.getElementById('login-error');
+
+            if (pinInserito === ADMIN_PIN) {
+                errDiv.innerText = "";
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
+                caricaTessereDaDatabase();
+            } else {
+                errDiv.innerText = "PIN errato! Riprova.";
+            }
+        }
+
+        async function caricaTessereDaDatabase() {
+            const container = document.getElementById('tessere-list');
+            const banner = document.getElementById('status-banner');
+            container.innerHTML = "<p style='text-align:center;'>Lettura tessere in corso dal database Supabase...</p>";
+
             try {
-                if (window.supabase) {
-                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                if (!window.supabase) {
+                    throw new Error("Libreria Supabase non caricata.");
                 }
-            } catch (e) {
-                console.error("Errore inizializzazione Supabase:", e);
-            }
 
-            let tutteLeTessere = [];
+                // Inizializza il client Supabase con l'URL corretto
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            const btnAccedi = document.getElementById('btn-accedi');
-            const pinInput = document.getElementById('pin-input');
+                // Scarica tutte le tessere ordinate per numero
+                const { data, error } = await supabaseClient
+                    .from('Tessere')
+                    .select('*')
+                    .order('numero_tessera', { ascending: true });
 
-            if (btnAccedi) {
-                btnAccedi.addEventListener('click', eseguiLogin);
-            }
-            if (pinInput) {
-                pinInput.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') eseguiLogin();
-                });
-            }
-
-            function eseguiLogin() {
-                const pinInserito = pinInput ? pinInput.value.trim() : '';
-                const errDiv = document.getElementById('login-error');
-
-                if (pinInserito === ADMIN_PIN) {
-                    if (errDiv) errDiv.innerText = "";
-                    const loginScreen = document.getElementById('login-screen');
-                    const adminPanel = document.getElementById('admin-panel');
-                    if (loginScreen) loginScreen.style.display = 'none';
-                    if (adminPanel) adminPanel.style.display = 'block';
-                    caricaTessereDaDatabase();
-                } else {
-                    if (errDiv) errDiv.innerText = "PIN errato! Riprova.";
+                if (error) {
+                    throw error;
                 }
-            }
 
-            async function caricaTessereDaDatabase() {
-                const container = document.getElementById('tessere-list');
-                const banner = document.getElementById('status-banner');
-                if (container) container.innerHTML = "<p style='text-align:center;'>Lettura tessere dal database...</p>";
+                tutteLeTessere = data || [];
 
-                try {
-                    if (!supabase) throw new Error("Client Supabase non pronto.");
-
-                    const { data, error } = await supabase
-                        .from('Tessere')
-                        .select('*')
-                        .order('numero_tessera', { ascending: true });
-
-                    if (error) throw error;
-
-                    tutteLeTessere = data || [];
-                    if (banner) banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} abbonati caricati)`;
-                    mostraTessere(tutteLeTessere);
-                } catch (err) {
-                    if (container) container.innerHTML = `<p class='error-msg'>Impossibile connettersi al database: ${err.message || err}</p>`;
-                    if (banner) banner.innerText = "❌ Errore di connessione";
-                }
-            }
-
-            window.mostraTessere = function(lista) {
-                const container = document.getElementById('tessere-list');
-                if (!container) return;
-                if (!lista || lista.length === 0) {
-                    container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata.</p>";
+                if (tutteLeTessere.length === 0) {
+                    container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata nel database.</p>";
+                    banner.innerText = "⚠️ Tabella vuota";
                     return;
                 }
 
-                let html = '';
-                lista.forEach(t => {
-                    const nome = t.nome_tifoso || "Tifoso senza nome";
-                    const punti = t.punti !== undefined && t.punti !== null ? t.punti : 0;
-                    html += `
-                        <div class="user-card" id="card-${t.id}">
-                            <div class="user-info">
-                                <div>
-                                    <span class="user-tessera">Tessera N° ${t.numero_tessera}</span>
-                                    <div class="user-name">${nome}</div>
-                                </div>
-                                <div class="user-points" id="pts-display-${t.id}">${punti} pt</div>
+                banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} abbonati caricate)`;
+                mostraTessere(tutteLeTessere);
+            } catch (err) {
+                container.innerHTML = `<p class='error-msg'>Impossibile connettersi al database: ${err.message || err}</p>`;
+                banner.innerText = "❌ Errore di connessione";
+            }
+        }
+
+        function mostraTessere(lista) {
+            const container = document.getElementById('tessere-list');
+            if (!lista || lista.length === 0) {
+                container.innerHTML = "<p style='text-align:center;'>Nessun risultato trovato.</p>";
+                return;
+            }
+
+            let html = '';
+            lista.forEach(t => {
+                const nome = t.nome_tifoso || "Tifoso senza nome";
+                const punti = t.punti !== undefined && t.punti !== null ? t.punti : 0;
+                html += `
+                    <div class="user-card" id="card-${t.id}">
+                        <div class="user-info">
+                            <div>
+                                <span class="user-tessera">Tessera N° ${t.numero_tessera}</span>
+                                <div class="user-name">${nome}</div>
                             </div>
-                            <div class="action-buttons">
-                                <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 10)">+10</button>
-                                <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 15)">+15</button>
-                                <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 20)">+20</button>
-                                <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 50)">+50</button>
-                                <button class="btn-pts minus" onclick="modificaPunti(${t.id}, -10)">-10</button>
-                                <button class="btn-pts minus" onclick="modificaPunti(${t.id}, -15)">-15</button>
-                                <input type="number" class="custom-input" id="custom-${t.id}" placeholder="±Val">
-                                <button class="btn-pts" onclick="applicaCustom(${t.id})">OK</button>
-                            </div>
-                            <div class="card-status" id="status-${t.id}"></div>
+                            <div class="user-points" id="pts-display-${t.id}">${punti} pt</div>
                         </div>
-                    `;
-                });
-                container.innerHTML = html;
-            }
+                        <div class="action-buttons">
+                            <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 10)">+10</button>
+                            <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 15)">+15</button>
+                            <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 20)">+20</button>
+                            <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 50)">+50</button>
+                            <button class="btn-pts minus" onclick="modificaPunti(${t.id}, -10)">-10</button>
+                            <button class="btn-pts minus" onclick="modificaPunti(${t.id}, -15)">-15</button>
+                            <input type="number" class="custom-input" id="custom-${t.id}" placeholder="±Val">
+                            <button class="btn-pts" onclick="applicaCustom(${t.id})">OK</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
 
-            window.filtraTessere = function() {
-                const searchInput = document.getElementById('search-input');
-                const query = searchInput ? searchInput.value.toLowerCase() : '';
-                const filtrate = tutteLeTessere.filter(t => {
-                    const nome = (t.nome_tifoso || "").toLowerCase();
-                    const numero = String(t.numero_tessera || "");
-                    return nome.includes(query) || numero.includes(query);
-                });
-                window.mostraTessere(filtrate);
-            }
+        function filtraTessere() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const filtrate = tutteLeTessere.filter(t => {
+                const nome = (t.nome_tifoso || "").toLowerCase();
+                const numero = String(t.numero_tessera || "");
+                return nome.includes(query) || numero.includes(query);
+            });
+            mostraTessere(filtrate);
+        }
 
-            window.modificaPunti = async function(id, delta) {
-                const tessera = tutteLeTessere.find(t => t.id === id);
-                if (!tessera) return;
-                const puntiAttuali = tessera.punti || 0;
-                const nuovoTotale = puntiAttuali + delta;
-                await aggiornaPuntiDB(id, nuovoTotale);
-            }
+        async function modificaPunti(id, delta) {
+            const tessera = tutteLeTessere.find(t => t.id === id);
+            if (!tessera) return;
+            const puntiAttuali = tessera.punti || 0;
+            const nuovoTotale = puntiAttuali + delta;
+            await aggiornaPuntiDB(id, nuovoTotale);
+        }
 
-            window.applicaCustom = async function(id) {
-                const customInput = document.getElementById(`custom-${id}`);
-                const inputVal = customInput ? customInput.value : '';
-                if (inputVal === '') return;
-                const delta = parseInt(inputVal, 10);
-                if (isNaN(delta)) return;
+        async function applicaCustom(id) {
+            const inputVal = document.getElementById(`custom-${id}`).value;
+            if (inputVal === '') return;
+            const delta = parseInt(inputVal, 10);
+            if (isNaN(delta)) return;
 
-                const tessera = tutteLeTessere.find(t => t.id === id);
-                if (!tessera) return;
-                const puntiAttuali = tessera.punti || 0;
-                const nuovoTotale = puntiAttuali + delta;
-                await aggiornaPuntiDB(id, nuovoTotale);
-                if (customInput) customInput.value = '';
-            }
+            const tessera = tutteLeTessere.find(t => t.id === id);
+            if (!tessera) return;
+            const puntiAttuali = tessera.punti || 0;
+            const nuovoTotale = puntiAttuali + delta;
+            await aggiornaPuntiDB(id, nuovoTotale);
+            document.getElementById(`custom-${id}`).value = '';
+        }
 
-            async function aggiornaPuntiDB(id, nuovoTotale) {
-                const ptsDisplay = document.getElementById(`pts-display-${id}`);
-                const statusMsg = document.getElementById(`status-${id}`);
-                const vecchioTesto = ptsDisplay ? ptsDisplay.innerText : "0 pt";
-                
-                if (ptsDisplay) ptsDisplay.innerText = "...";
-                if (statusMsg) {
-                    statusMsg.style.color = "#666";
-                    statusMsg.innerText = "Salvataggio in corso...";
+        async function aggiornaPuntiDB(id, nuovoTotale) {
+            const ptsDisplay = document.getElementById(`pts-display-${id}`);
+            const vecchioTesto = ptsDisplay.innerText;
+            ptsDisplay.innerText = "...";
+
+            try {
+                const { error } = await supabaseClient
+                    .from('Tessere')
+                    .update({ punti: nuovoTotale })
+                    .eq('id', id);
+
+                if (error) {
+                    throw error;
                 }
 
-                try {
-                    if (!supabase) throw new Error("Client Supabase non pronto.");
-
-                    const { error } = await supabase
-                        .from('Tessere')
-                        .update({ punti: nuovoTotale })
-                        .eq('id', id);
-
-                    if (error) throw error;
-
-                    const tessera = tutteLeTessere.find(t => t.id === id);
-                    if (tessera) {
-                        tessera.punti = nuovoTotale;
-                    }
-
-                    if (ptsDisplay) ptsDisplay.innerText = `${nuovoTotale} pt`;
-                    if (statusMsg) {
-                        statusMsg.style.color = "#059669";
-                        statusMsg.innerText = "✓ Aggiornato su Supabase!";
-                        setTimeout(() => { statusMsg.innerText = ""; }, 3000);
-                    }
-                } catch (err) {
-                    if (ptsDisplay) ptsDisplay.innerText = vecchioTesto;
-                    if (statusMsg) {
-                        statusMsg.style.color = "#dc2626";
-                        statusMsg.innerText = "❌ Errore: " + (err.message || err);
-                    }
+                const tessera = tutteLeTessere.find(t => t.id === id);
+                if (tessera) {
+                    tessera.punti = nuovoTotale;
                 }
+                ptsDisplay.innerText = `${nuovoTotale} pt`;
+            } catch (err) {
+                alert("Errore durante l'aggiornamento su Supabase: " + (err.message || err));
+                ptsDisplay.innerText = vecchioTesto;
             }
-        });
+        }
     </script>
 </body>
 </html>
