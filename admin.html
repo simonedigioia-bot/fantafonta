@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - FantaFonta</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --verde-scuro: #006633;
@@ -223,15 +222,11 @@
         const SUPABASE_URL = "https://xyyvmobvcggbqracdkkki.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUGqNI4UygtYSRDA_wa7mVH4f";
         
-        let supabaseClient = null;
         let tutteLeTessere = [];
 
         document.getElementById('btn-accedi').addEventListener('click', eseguiLogin);
-
         document.getElementById('pin-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                eseguiLogin();
-            }
+            if (e.key === 'Enter') eseguiLogin();
         });
 
         function eseguiLogin() {
@@ -251,27 +246,26 @@
         async function caricaTessereDaDatabase() {
             const container = document.getElementById('tessere-list');
             const banner = document.getElementById('status-banner');
-            container.innerHTML = "<p style='text-align:center;'>Lettura tessere in corso...</p>";
+            container.innerHTML = "<p style='text-align:center;'>Lettura tessere dal database...</p>";
 
             try {
-                if (!window.supabase) {
-                    throw new Error("Libreria Supabase non caricata.");
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/Tessere?select=*&order=numero_tessera.asc`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Errore server: ${response.status}`);
                 }
 
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-                const { data, error } = await supabaseClient
-                    .from('Tessere')
-                    .select('*')
-                    .order('numero_tessera', { ascending: true });
-
-                if (error) throw error;
-
-                tutteLeTessere = data || [];
+                tutteLeTessere = await response.json() || [];
                 banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} abbonati caricati)`;
                 mostraTessere(tutteLeTessere);
             } catch (err) {
-                container.innerHTML = `<p class='error-msg'>Errore di connessione: ${err.message || err}</p>`;
+                container.innerHTML = `<p class='error-msg'>Impossibile connettersi al database: ${err.message}</p>`;
                 banner.innerText = "❌ Errore di connessione";
             }
         }
@@ -279,7 +273,7 @@
         function mostraTessere(lista) {
             const container = document.getElementById('tessere-list');
             if (!lista || lista.length === 0) {
-                container.innerHTML = "<p style='text-align:center;'>Nessun risultato trovato.</p>";
+                container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata.</p>";
                 return;
             }
 
@@ -355,17 +349,21 @@
             statusMsg.innerText = "Salvataggio in corso...";
 
             try {
-                // Esegue l'aggiornamento diretto su Supabase
-                const { error } = await supabaseClient
-                    .from('Tessere')
-                    .update({ punti: nuovoTotale })
-                    .eq('id', id);
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/Tessere?id=eq.${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({ punti: nuovoTotale })
+                });
 
-                if (error) {
-                    throw error;
+                if (!response.ok) {
+                    throw new Error("Errore durante il salvataggio su Supabase");
                 }
 
-                // Aggiorna la memoria locale
                 const tessera = tutteLeTessere.find(t => t.id === id);
                 if (tessera) {
                     tessera.punti = nuovoTotale;
@@ -373,13 +371,13 @@
 
                 ptsDisplay.innerText = `${nuovoTotale} pt`;
                 statusMsg.style.color = "#059669";
-                statusMsg.innerText = "✓ Salvato su Supabase!";
+                statusMsg.innerText = "✓ Aggiornato su Supabase!";
                 
                 setTimeout(() => { statusMsg.innerText = ""; }, 3000);
             } catch (err) {
                 ptsDisplay.innerText = vecchioTesto;
                 statusMsg.style.color = "#dc2626";
-                statusMsg.innerText = "❌ Errore: " + (err.message || err);
+                statusMsg.innerText = "❌ " + err.message;
             }
         }
     </script>
