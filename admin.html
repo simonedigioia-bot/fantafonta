@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - FantaFonta</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --verde-scuro: #006633;
@@ -219,9 +220,12 @@
 
     <script>
         const ADMIN_PIN = "1928";
+        
+        // CONFIGURAZIONE SUPABASE (Identica a tifoso.html)
         const SUPABASE_URL = "https://xyyvmobvcggbqracdkkki.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUGqNI4UygtYSRDA_wa7mVH4f";
         
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         let tutteLeTessere = [];
 
         document.getElementById('btn-accedi').addEventListener('click', eseguiLogin);
@@ -249,23 +253,18 @@
             container.innerHTML = "<p style='text-align:center;'>Lettura tessere dal database...</p>";
 
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/Tessere?select=*&order=numero_tessera.asc`, {
-                    method: 'GET',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                    }
-                });
+                const { data, error } = await supabase
+                    .from('Tessere')
+                    .select('*')
+                    .order('numero_tessera', { ascending: true });
 
-                if (!response.ok) {
-                    throw new Error(`Errore server: ${response.status}`);
-                }
+                if (error) throw error;
 
-                tutteLeTessere = await response.json() || [];
+                tutteLeTessere = data || [];
                 banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} abbonati caricati)`;
                 mostraTessere(tutteLeTessere);
             } catch (err) {
-                container.innerHTML = `<p class='error-msg'>Impossibile connettersi al database: ${err.message}</p>`;
+                container.innerHTML = `<p class='error-msg'>Impossibile connettersi al database: ${err.message || err}</p>`;
                 banner.innerText = "❌ Errore di connessione";
             }
         }
@@ -349,21 +348,15 @@
             statusMsg.innerText = "Salvataggio in corso...";
 
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/Tessere?id=eq.${id}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({ punti: nuovoTotale })
-                });
+                // Esegue l'aggiornamento tramite il client ufficiale Supabase
+                const { error } = await supabase
+                    .from('Tessere')
+                    .update({ punti: nuovoTotale })
+                    .eq('id', id);
 
-                if (!response.ok) {
-                    throw new Error("Errore durante il salvataggio su Supabase");
-                }
+                if (error) throw error;
 
+                // Aggiorna la memoria locale
                 const tessera = tutteLeTessere.find(t => t.id === id);
                 if (tessera) {
                     tessera.punti = nuovoTotale;
@@ -377,7 +370,7 @@
             } catch (err) {
                 ptsDisplay.innerText = vecchioTesto;
                 statusMsg.style.color = "#dc2626";
-                statusMsg.innerText = "❌ " + err.message;
+                statusMsg.innerText = "❌ Errore: " + (err.message || err);
             }
         }
     </script>
