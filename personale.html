@@ -384,7 +384,7 @@
         caricaProfilo();
     </script>
 <!-- BANNER CONSENSO PRIVACY FANTAFONTA -->
-<div id="privacy-banner" style="display: block; position: fixed; bottom: 0; left: 0; width: 100%; background: #111111; color: #ffffff; padding: 16px 20px; z-index: 99999; box-shadow: 0 -4px 20px rgba(0,0,0,0.3); font-family: 'Montserrat', sans-serif;">
+<div id="privacy-banner" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #111111; color: #ffffff; padding: 16px 20px; z-index: 99999; box-shadow: 0 -4px 20px rgba(0,0,0,0.3); font-family: 'Montserrat', sans-serif;">
     <div style="max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px;">
         <p style="font-size: 13px; color: #cccccc; text-align: left; margin: 0; line-height: 1.5;">
             🔒 <strong>Informativa Privacy & Pubblicazione Dati:</strong> Partecipando al <strong>FantaFonta</strong>, acconsenti che il tuo <strong>Nome, Cognome e Punteggio</strong> siano resi pubblici nelle classifiche visibili sul sito e sui canali ufficiali del <em>Fontanarossa Calcio</em>. Nessuna registrazione richiesta. Proseguendo nella navigazione accetti tale trattamento.
@@ -397,7 +397,19 @@
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const oggi = new Date().toISOString().split('T')[0]; // Prende la data di oggi (es. "2026-10-15")
+        const ultimaAccettazione = localStorage.getItem('privacy_fantafonta_data');
+
+        // Se l'utente non ha ancora accettato oggi, mostra il banner
+        if (ultimaAccettazione !== oggi) {
+            document.getElementById('privacy-banner').style.display = 'block';
+        }
+    });
+
     function accettaPrivacy() {
+        const oggi = new Date().toISOString().split('T')[0];
+        localStorage.setItem('privacy_fantafonta_data', oggi); // Salva la data di oggi nel browser
         const banner = document.getElementById('privacy-banner');
         if (banner) {
             banner.style.display = 'none';
