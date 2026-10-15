@@ -172,6 +172,12 @@
             font-size: 14px;
         }
 
+        .card-status {
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
         .error-msg { color: #dc2626; font-size: 14px; margin-top: 10px; text-align: center; font-weight: 600; line-height: 1.4; }
         
         .nav-back {
@@ -205,7 +211,7 @@
             <input type="text" id="search-input" class="search-box" placeholder="Cerca per nome o numero tessera..." onkeyup="filtraTessere()">
             
             <div id="tessere-list">
-                <!-- Elenco dinamico letto direttamente dal database -->
+                <!-- Elenco dinamico -->
             </div>
         </div>
     </div>
@@ -214,9 +220,7 @@
 
     <script>
         const ADMIN_PIN = "1928";
-        
-        // URL E CHIAVE ESATTI CORRETTI (con cdkki - 2 k)
-        const SUPABASE_URL = "https://xyyvmobvcggbqracdkki.supabase.co";
+        const SUPABASE_URL = "https://xyyvmobvcggbqracdkkki.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUGqNI4UygtYSRDA_wa7mVH4f";
         
         let supabaseClient = null;
@@ -247,38 +251,27 @@
         async function caricaTessereDaDatabase() {
             const container = document.getElementById('tessere-list');
             const banner = document.getElementById('status-banner');
-            container.innerHTML = "<p style='text-align:center;'>Lettura tessere in corso dal database Supabase...</p>";
+            container.innerHTML = "<p style='text-align:center;'>Lettura tessere in corso...</p>";
 
             try {
                 if (!window.supabase) {
                     throw new Error("Libreria Supabase non caricata.");
                 }
 
-                // Inizializza il client Supabase con l'URL corretto
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-                // Scarica tutte le tessere ordinate per numero
                 const { data, error } = await supabaseClient
                     .from('Tessere')
                     .select('*')
                     .order('numero_tessera', { ascending: true });
 
-                if (error) {
-                    throw error;
-                }
+                if (error) throw error;
 
                 tutteLeTessere = data || [];
-
-                if (tutteLeTessere.length === 0) {
-                    container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata nel database.</p>";
-                    banner.innerText = "⚠️ Tabella vuota";
-                    return;
-                }
-
-                banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} abbonati caricate)`;
+                banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} abbonati caricati)`;
                 mostraTessere(tutteLeTessere);
             } catch (err) {
-                container.innerHTML = `<p class='error-msg'>Impossibile connettersi al database: ${err.message || err}</p>`;
+                container.innerHTML = `<p class='error-msg'>Errore di connessione: ${err.message || err}</p>`;
                 banner.innerText = "❌ Errore di connessione";
             }
         }
@@ -313,6 +306,7 @@
                             <input type="number" class="custom-input" id="custom-${t.id}" placeholder="±Val">
                             <button class="btn-pts" onclick="applicaCustom(${t.id})">OK</button>
                         </div>
+                        <div class="card-status" id="status-${t.id}"></div>
                     </div>
                 `;
             });
@@ -353,10 +347,15 @@
 
         async function aggiornaPuntiDB(id, nuovoTotale) {
             const ptsDisplay = document.getElementById(`pts-display-${id}`);
+            const statusMsg = document.getElementById(`status-${id}`);
             const vecchioTesto = ptsDisplay.innerText;
+            
             ptsDisplay.innerText = "...";
+            statusMsg.style.color = "#666";
+            statusMsg.innerText = "Salvataggio in corso...";
 
             try {
+                // Esegue l'aggiornamento diretto su Supabase
                 const { error } = await supabaseClient
                     .from('Tessere')
                     .update({ punti: nuovoTotale })
@@ -366,14 +365,21 @@
                     throw error;
                 }
 
+                // Aggiorna la memoria locale
                 const tessera = tutteLeTessere.find(t => t.id === id);
                 if (tessera) {
                     tessera.punti = nuovoTotale;
                 }
+
                 ptsDisplay.innerText = `${nuovoTotale} pt`;
+                statusMsg.style.color = "#059669";
+                statusMsg.innerText = "✓ Salvato su Supabase!";
+                
+                setTimeout(() => { statusMsg.innerText = ""; }, 3000);
             } catch (err) {
-                alert("Errore durante l'aggiornamento su Supabase: " + (err.message || err));
                 ptsDisplay.innerText = vecchioTesto;
+                statusMsg.style.color = "#dc2626";
+                statusMsg.innerText = "❌ Errore: " + (err.message || err);
             }
         }
     </script>
