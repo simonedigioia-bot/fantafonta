@@ -383,11 +383,11 @@
 
         caricaProfilo();
     </script>
-    <!-- BANNER CONSENSO PRIVACY FANTAFONTA -->
-<div id="privacy-banner" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #111111; color: #ffffff; padding: 16px 20px; z-index: 99999; box-shadow: 0 -4px 20px rgba(0,0,0,0.3); font-family: 'Montserrat', sans-serif;">
+<!-- BANNER CONSENSO PRIVACY FANTAFONTA -->
+<div id="privacy-banner" style="display: block; position: fixed; bottom: 0; left: 0; width: 100%; background: #111111; color: #ffffff; padding: 16px 20px; z-index: 99999; box-shadow: 0 -4px 20px rgba(0,0,0,0.3); font-family: 'Montserrat', sans-serif;">
     <div style="max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px;">
         <p style="font-size: 13px; color: #cccccc; text-align: left; margin: 0; line-height: 1.5;">
-            🔒 <strong>Informativa Privacy & Pubblicazione Dati:</strong> Partecipando al <strong>FantaFonta</strong>, acconsenti che il tuo <strong>Nome, Cognome e Punteggio</strong> siano resi pubblici nelle classifiche visibili sul sito e sui canali ufficiali del <em>Fontanarossa Calcio</em>. Nessuna registrazione richiesta[cite: 12, 13]. Proseguendo nella navigazione accetti tale trattamento.
+            🔒 <strong>Informativa Privacy & Pubblicazione Dati:</strong> Partecipando al <strong>FantaFonta</strong>, acconsenti che il tuo <strong>Nome, Cognome e Punteggio</strong> siano resi pubblici nelle classifiche visibili sul sito e sui canali ufficiali del <em>Fontanarossa Calcio</em>. Nessuna registrazione richiesta. Proseguendo nella navigazione accetti tale trattamento.
         </p>
         <div style="display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
             <a href="privacy.html" target="_blank" style="color: #4ade80; font-size: 12px; text-decoration: underline;">Leggi informativa completa</a>
@@ -397,16 +397,7 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Controlla se l'utente ha già accettato in passato
-        if (!localStorage.getItem('privacy_fantafonta_accettata')) {
-            document.getElementById('privacy-banner').style.display = 'block';
-        }
-    });
-
     function accettaPrivacy() {
-        // Salva la scelta nel browser e nasconde il banner
-        localStorage.setItem('privacy_fantafonta_accettata', 'true');
         const banner = document.getElementById('privacy-banner');
         if (banner) {
             banner.style.display = 'none';
