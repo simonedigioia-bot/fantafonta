@@ -87,6 +87,28 @@
         /* Pannello Admin */
         #admin-panel { display: none; }
 
+        .top-actions {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .btn-toggle-view {
+            background-color: var(--verde-scuro);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-toggle-view:hover { background-color: #004d26; }
+        .btn-toggle-view:active { transform: scale(0.98); }
+
         .search-box {
             width: 100%;
             padding: 12px 15px;
@@ -172,6 +194,56 @@
             font-size: 14px;
         }
 
+        /* Sezione Classifica Admin */
+        #classifica-section { display: none; }
+
+        .rank-card {
+            background: #fafafa;
+            border: 2px solid #eee;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rank-card.top-1 {
+            background: #fffbeb;
+            border-color: #f59e0b;
+        }
+
+        .rank-card.top-2 {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        .rank-card.top-3 {
+            background: #fff7ed;
+            border-color: #fb923c;
+        }
+
+        .rank-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rank-badge {
+            font-family: 'Anton', sans-serif;
+            font-size: 22px;
+            min-width: 42px;
+            text-align: center;
+            color: var(--verde-scuro);
+        }
+
+        .rank-sub {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+
         .error-msg { color: #dc2626; font-size: 14px; margin-top: 10px; text-align: center; font-weight: 600; line-height: 1.4; }
         
         .nav-back {
@@ -202,10 +274,23 @@
         <!-- SEZIONE GESTIONE ABBONATI -->
         <div id="admin-panel">
             <div id="status-banner" class="mode-banner">Connessione a Supabase in corso...</div>
-            <input type="text" id="search-input" class="search-box" placeholder="Cerca per nome o numero tessera..." onkeyup="filtraTessere()">
-            
-            <div id="tessere-list">
-                <!-- Elenco dinamico letto direttamente dal database -->
+
+            <div class="top-actions">
+                <button class="btn-toggle-view" id="btn-toggle-classifica" type="button" onclick="toggleClassifica()">🏆 Mostra Classifica</button>
+            </div>
+
+            <div id="gestione-section">
+                <input type="text" id="search-input" class="search-box" placeholder="Cerca per nome o numero tessera..." onkeyup="filtraTessere()">
+                
+                <div id="tessere-list">
+                    <!-- Elenco dinamico letto direttamente dal database -->
+                </div>
+            </div>
+
+            <div id="classifica-section">
+                <div id="classifica-list">
+                    <!-- Classifica dinamica ordinata per punteggio -->
+                </div>
             </div>
         </div>
     </div>
@@ -221,6 +306,7 @@
         
         let supabaseClient = null;
         let tutteLeTessere = [];
+        let classificaVisibile = false;
 
         document.getElementById('btn-accedi').addEventListener('click', eseguiLogin);
 
@@ -273,15 +359,86 @@
                 if (tutteLeTessere.length === 0) {
                     container.innerHTML = "<p style='text-align:center;'>Nessuna tessera attiva trovata nel database.</p>";
                     banner.innerText = "⚠️ Nessuna tessera con nome presente";
+                    mostraClassifica();
                     return;
                 }
 
                 banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} tessere attive)`;
                 mostraTessere(tutteLeTessere);
+                mostraClassifica();
             } catch (err) {
                 container.innerHTML = `<p class='error-msg'>Impossibile connettersi al database: ${err.message || err}</p>`;
                 banner.innerText = "❌ Errore di connessione";
             }
+        }
+
+        function toggleClassifica() {
+            classificaVisibile = !classificaVisibile;
+            const gestioneDiv = document.getElementById('gestione-section');
+            const classificaDiv = document.getElementById('classifica-section');
+            const btn = document.getElementById('btn-toggle-classifica');
+
+            if (classificaVisibile) {
+                mostraClassifica();
+                gestioneDiv.style.display = 'none';
+                classificaDiv.style.display = 'block';
+                btn.innerText = "✏️ Torna alla Gestione Punti";
+            } else {
+                classificaDiv.style.display = 'none';
+                gestioneDiv.style.display = 'block';
+                btn.innerText = "🏆 Mostra Classifica";
+            }
+        }
+
+        function mostraClassifica() {
+            const container = document.getElementById('classifica-list');
+            if (!tutteLeTessere || tutteLeTessere.length === 0) {
+                container.innerHTML = "<p style='text-align:center;'>Nessun giocatore in classifica.</p>";
+                return;
+            }
+
+            // Ordina dal punteggio più alto al più basso; a parità di punti ordina per numero tessera
+            const ordinata = [...tutteLeTessere].sort((a, b) => {
+                const ptsA = a.punti !== undefined && a.punti !== null ? Number(a.punti) : 0;
+                const ptsB = b.punti !== undefined && b.punti !== null ? Number(b.punti) : 0;
+                if (ptsB !== ptsA) return ptsB - ptsA;
+                return (Number(a.numero_tessera) || 0) - (Number(b.numero_tessera) || 0);
+            });
+
+            let html = '';
+            ordinata.forEach((t, index) => {
+                const posizione = index + 1;
+                const punti = t.punti !== undefined && t.punti !== null ? t.punti : 0;
+
+                let medaglia = `${posizione}°`;
+                let extraClass = '';
+
+                if (posizione === 1) {
+                    medaglia = '🥇';
+                    extraClass = 'top-1';
+                } else if (posizione === 2) {
+                    medaglia = '🥈';
+                    extraClass = 'top-2';
+                } else if (posizione === 3) {
+                    medaglia = '🥉';
+                    extraClass = 'top-3';
+                }
+
+                html += `
+                    <div class="rank-card ${extraClass}">
+                        <div class="rank-left">
+                            <div class="rank-badge">${medaglia}</div>
+                            <div>
+                                <div class="user-name">${t.nome_tifoso}</div>
+                                <div class="rank-sub">Tessera N° ${t.numero_tessera}</div>
+                            </div>
+                        </div>
+                        <div class="user-points">${punti} pt</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
         }
 
         function mostraTessere(lista) {
@@ -372,6 +529,7 @@
                     tessera.punti = nuovoTotale;
                 }
                 ptsDisplay.innerText = `${nuovoTotale} pt`;
+                mostraClassifica();
             } catch (err) {
                 alert("Errore durante l'aggiornamento su Supabase: " + (err.message || err));
                 ptsDisplay.innerText = vecchioTesto;
