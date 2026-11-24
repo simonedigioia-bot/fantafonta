@@ -3,538 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - FantaFonta</title>
+    <title>FantaFonta - Classifica Generale</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- LIBRERIA UFFICIALE SUPABASE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --verde-scuro: #006633;
+        :root { 
+            --verde-scuro: #006633; 
             --verde-chiaro: #e6f0eb;
-            --sfondo: #f4f6f8;
-            --testo: #111111;
+            --sfondo-chiaro: #f4f6f8; 
+            --testo-scuro: #111111; 
+            --card-bg: #ffffff;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; }
 
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: var(--sfondo);
-            color: var(--testo);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--sfondo-chiaro); 
+            color: var(--testo-scuro); 
+            display: flex; flex-direction: column; 
+            min-height: 100vh; 
         }
 
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            margin-top: 20px;
+        .header { 
+            text-align: center; padding: 12px 10px; 
+            background: white; border-bottom: 1px solid #e5e5e5; 
+            display: flex; justify-content: center; align-items: center;
         }
 
-        h1 {
-            font-family: 'Anton', sans-serif;
-            color: var(--verde-scuro);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-align: center;
-            font-size: 36px;
-            margin-bottom: 5px;
+        .main-logo { height: 48px; width: auto; object-fit: contain; }
+
+        .nav-buttons { 
+            display: flex; justify-content: center; gap: 8px; 
+            padding: 10px 12px; background: #ffffff; border-bottom: 1px solid #e5e5e5;
         }
 
-        p { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
-
-        /* Schermata Login PIN */
-        #login-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            padding: 20px 0;
+        .btn { 
+            flex: 1; max-width: 120px; text-align: center; padding: 10px 4px; 
+            border: 2px solid var(--verde-scuro); background: white; 
+            color: var(--verde-scuro); font-weight: 700; border-radius: 8px; 
+            cursor: pointer; text-decoration: none; font-size: 13px; 
         }
 
-        .pin-input {
-            font-size: 28px;
-            text-align: center;
-            padding: 12px;
-            width: 220px;
-            border: 2px solid #ccc;
-            border-radius: 12px;
-            letter-spacing: 6px;
-            font-family: inherit;
+        .btn.active { background: var(--verde-scuro); color: white; }
+
+        .content { 
+            flex: 1; padding: 15px; max-width: 450px; 
+            margin: 0 auto; width: 100%; display: flex; flex-direction: column;
         }
 
-        .btn {
-            background-color: var(--verde-scuro);
-            color: white;
-            border: none;
-            padding: 14px 35px;
-            font-size: 18px;
-            font-weight: 700;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: background 0.2s;
-            width: 220px;
+        .card {
+            background: var(--card-bg); border-radius: 16px; padding: 20px 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #eaeaea;
+            margin-top: 5px; text-align: center;
         }
 
-        .btn:hover { background-color: #004d26; }
-
-        /* Pannello Admin */
-        #admin-panel { display: none; }
-
-        .top-actions {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 15px;
+        .titolo-classifica {
+            font-family: 'Anton', sans-serif; font-size: 26px; 
+            color: var(--verde-scuro); margin: 0 0 15px 0;
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
 
-        .btn-toggle-view {
-            background-color: var(--verde-scuro);
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-family: inherit;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
+        /* Stile Tabella Classifica */
+        .ranking-table {
+            width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left;
         }
 
-        .btn-toggle-view:hover { background-color: #004d26; }
-        .btn-toggle-view:active { transform: scale(0.98); }
-
-        .search-box {
-            width: 100%;
-            padding: 12px 15px;
-            font-size: 16px;
-            border: 2px solid #ddd;
-            border-radius: 12px;
-            margin-bottom: 15px;
+        .ranking-table th {
+            font-size: 11px; font-weight: 700; color: #777; text-transform: uppercase;
+            padding: 8px 6px; border-bottom: 2px solid var(--verde-chiaro); letter-spacing: 0.5px;
         }
 
-        .mode-banner {
-            background: #e6f0eb;
-            color: var(--verde-scuro);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 15px;
+        .ranking-table td {
+            padding: 12px 6px; font-size: 14px; border-bottom: 1px solid #f0f0f0;
         }
 
-        .user-card {
-            background: #fafafa;
-            border: 2px solid #eee;
-            border-radius: 14px;
-            padding: 15px;
-            margin-bottom: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        .ranking-table tr:last-child td { border-bottom: none; }
+
+        .pos-col { width: 35px; font-weight: 700; text-align: center; color: var(--verde-scuro); }
+        .pos-podio { font-family: 'Anton', sans-serif; font-size: 16px; }
+        .punti-col { font-weight: 700; color: var(--verde-scuro); text-align: right; }
+        .nome-col { font-weight: 600; color: var(--testo-scuro); }
+
+        /* Pulsante Tuttocampo */
+        .tuttocampo-section {
+            max-width: 450px; margin: 10px auto 15px auto; width: 100%; padding: 0 15px;
         }
 
-        .user-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .btn-tuttocampo {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background-color: #ffffff; color: var(--verde-scuro); text-decoration: none;
+            padding: 12px 16px; border-radius: 12px; border: 2px solid var(--verde-scuro);
+            font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.5px;
+            width: 100%; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.2s ease, transform 0.1s ease;
         }
 
-        .user-name {
-            font-weight: 700;
-            font-size: 18px;
+        .btn-tuttocampo:hover { background-color: var(--verde-chiaro); }
+        .btn-tuttocampo:active { transform: scale(0.98); }
+        .btn-tuttocampo img { height: 20px; width: auto; object-fit: contain; }
+
+        /* Footer e Sponsor */
+        .footer { 
+            background-color: var(--verde-scuro); color: white; 
+            text-align: center; padding: 20px 15px; margin-top: auto; 
         }
 
-        .user-tessera {
-            font-size: 14px;
-            color: #666;
-            background: var(--verde-chiaro);
-            padding: 4px 10px;
-            border-radius: 8px;
+        .sponsor-container {
+            display: flex; justify-content: center; align-items: center; gap: 15px;
+            flex-wrap: wrap; margin-top: 12px; background: rgba(255, 255, 255, 0.15);
+            padding: 15px 10px; border-radius: 8px; border: none; overflow: hidden;
         }
 
-        .user-points {
-            font-family: 'Anton', sans-serif;
-            font-size: 24px;
-            color: var(--verde-scuro);
+        .sponsor-logo {
+            height: 35px; max-width: 90px; object-fit: contain; display: inline-block;
+            border: none !important; outline: none;
         }
 
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .btn-pts {
-            background: #e2e8f0;
-            border: none;
-            padding: 8px 12px;
-            font-weight: 700;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .btn-pts.plus { background: #d1fae5; color: #065f46; }
-        .btn-pts.minus { background: #fee2e2; color: #991b1b; }
-        
-        .custom-input {
-            width: 70px;
-            padding: 6px;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        /* Sezione Classifica Admin */
-        #classifica-section { display: none; }
-
-        .rank-card {
-            background: #fafafa;
-            border: 2px solid #eee;
-            border-radius: 14px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .rank-card.top-1 {
-            background: #fffbeb;
-            border-color: #f59e0b;
-        }
-
-        .rank-card.top-2 {
-            background: #f8fafc;
-            border-color: #94a3b8;
-        }
-
-        .rank-card.top-3 {
-            background: #fff7ed;
-            border-color: #fb923c;
-        }
-
-        .rank-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .rank-badge {
-            font-family: 'Anton', sans-serif;
-            font-size: 22px;
-            min-width: 42px;
-            text-align: center;
-            color: var(--verde-scuro);
-        }
-
-        .rank-sub {
-            font-size: 12px;
-            color: #666;
-            margin-top: 2px;
-        }
-
-        .error-msg { color: #dc2626; font-size: 14px; margin-top: 10px; text-align: center; font-weight: 600; line-height: 1.4; }
-        
-        .nav-back {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .nav-back:hover { text-decoration: underline; }
+        .sponsor-logo.sponsor-grande { height: 48px; max-width: 120px; object-fit: contain; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Admin FantaFonta</h1>
-        <p>Pannello di controllo punti riservato allo staff</p>
+    <div class="header">
+        <img src="/img/logo-fantafonta.png" alt="FantaFonta" class="main-logo">
+    </div>
 
-        <!-- SEZIONE LOGIN PIN -->
-        <div id="login-screen">
-            <p>Inserisci il PIN segreto amministratore:</p>
-            <input type="password" id="pin-input" class="pin-input" placeholder="••••" autocomplete="off" maxlength="6">
-            <button class="btn" id="btn-accedi" type="button">Accedi</button>
-            <div id="login-error" class="error-msg"></div>
-        </div>
+    <div class="nav-buttons">
+        <a href="/personale.html" id="link-personale" class="btn">Personale</a>
+        <a href="/index.html" id="link-classifica" class="btn active">Classifica</a>
+        <a href="/regolamento.html" id="link-regolamento" class="btn">Regolamento</a>
+    </div>
 
-        <!-- SEZIONE GESTIONE ABBONATI -->
-        <div id="admin-panel">
-            <div id="status-banner" class="mode-banner">Connessione a Supabase in corso...</div>
-
-            <div class="top-actions">
-                <button class="btn-toggle-view" id="btn-toggle-classifica" type="button" onclick="toggleClassifica()">🏆 Mostra Classifica</button>
-            </div>
-
-            <div id="gestione-section">
-                <input type="text" id="search-input" class="search-box" placeholder="Cerca per nome o numero tessera..." onkeyup="filtraTessere()">
-                
-                <div id="tessere-list">
-                    <!-- Elenco dinamico letto direttamente dal database -->
-                </div>
-            </div>
-
-            <div id="classifica-section">
-                <div id="classifica-list">
-                    <!-- Classifica dinamica ordinata per punteggio -->
-                </div>
+    <div class="content">
+        <div class="card">
+            <h2 class="titolo-classifica">Top 5 Classifica</h2>
+            <div id="contenitore-classifica">
+                <p style="color:#666; font-size:13px;">Caricamento classifica in corso...</p>
             </div>
         </div>
     </div>
 
-    <a href="index.html" class="nav-back">← Torna al sito principale</a>
+    <div class="tuttocampo-section">
+        <a href="https://www.tuttocampo.it/Liguria/GE/TerzaCategoria/GironeBGenova/Risultati" target="_blank" class="btn-tuttocampo">
+            <img src="/img/f-logo.png" alt="F">
+            Risultati e Classifiche su Tuttocampo
+        </a>
+    </div>
+
+    <!-- SPONSOR BOARD -->
+    <div class="footer">
+        <p style="margin:0; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; opacity:0.85;">Sponsor Ufficiali</p>
+        <div class="sponsor-container">
+            <img src="/img/sponsor1.png" alt="Annibaldi" class="sponsor-logo">
+            <img src="/img/sponsor2.png" alt="K Service" class="sponsor-logo sponsor-grande">
+            <img src="/img/sponsor3.png" alt="La Terrazza" class="sponsor-logo sponsor-grande">
+            <img src="/img/sponsor4.png" alt="Qualità e Passione" class="sponsor-logo">
+            <img src="/img/sponsor5.png" alt="DEO" class="sponsor-logo">
+            <img src="/img/sponsor6.png" alt="Pisacane" class="sponsor-logo sponsor-grande">
+            <img src="/img/sponsor7.png" alt="Tekno Ambiente" class="sponsor-logo">
+        </div>
+    </div>
 
     <script>
-        const ADMIN_PIN = "1928";
+        const SUPABASE_URL = 'https://xyyvmobvcggbqracdkki.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5eXZtb2J2Y2dnYnFyYWNka2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4MTU3MDYsImV4cCI6MjA5ODM5MTcwNn0.QpN5HQQxdz77w50e-OOd9GdnoX2B7y8d-4CYeNWyx2U';
         
-        // URL E CHIAVE ESATTI CORRETTI (con cdkki - 2 k)
-        const SUPABASE_URL = "https://xyyvmobvcggbqracdkki.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_AuD-8UcUGqNI4UygtYSRDA_wa7mVH4f";
-        
-        let supabaseClient = null;
-        let tutteLeTessere = [];
-        let classificaVisibile = false;
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        document.getElementById('btn-accedi').addEventListener('click', eseguiLogin);
+        function impostaNavigazione() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let numTessera = urlParams.get('tessera');
 
-        document.getElementById('pin-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                eseguiLogin();
+            const pathParts = window.location.pathname.split('/').filter(p => p.length > 0);
+            if (!numTessera && pathParts.length > 0 && pathParts[0] === 'p' && pathParts[1]) {
+                numTessera = pathParts[1];
             }
-        });
 
-        function eseguiLogin() {
-            const pinInserito = document.getElementById('pin-input').value.trim();
-            const errDiv = document.getElementById('login-error');
-
-            if (pinInserito === ADMIN_PIN) {
-                errDiv.innerText = "";
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('admin-panel').style.display = 'block';
-                caricaTessereDaDatabase();
+            if (numTessera && !isNaN(numTessera)) {
+                localStorage.setItem('miaTessera', numTessera);
             } else {
-                errDiv.innerText = "PIN errato! Riprova.";
+                numTessera = localStorage.getItem('miaTessera');
+                if (numTessera && isNaN(numTessera)) {
+                    localStorage.removeItem('miaTessera');
+                    numTessera = null;
+                }
             }
+
+            let suffisso = (numTessera && !isNaN(numTessera)) ? '?tessera=' + numTessera : '';
+
+            const linkPersonale = document.getElementById('link-personale');
+            const linkClassifica = document.getElementById('link-classifica');
+            const linkRegolamento = document.getElementById('link-regolamento');
+
+            if (linkPersonale) linkPersonale.href = '/personale.html' + suffisso;
+            if (linkClassifica) { linkClassifica.href = '/index.html' + suffisso; linkClassifica.classList.add('active'); }
+            if (linkRegolamento) linkRegolamento.href = '/regolamento.html' + suffisso;
         }
 
-        async function caricaTessereDaDatabase() {
-            const container = document.getElementById('tessere-list');
-            const banner = document.getElementById('status-banner');
-            container.innerHTML = "<p style='text-align:center;'>Lettura tessere in corso dal database Supabase...</p>";
+        async function caricaClassifica() {
+            const contenitore = document.getElementById('contenitore-classifica');
 
             try {
-                if (!window.supabase) {
-                    throw new Error("Libreria Supabase non caricata.");
-                }
-
-                // Inizializza il client Supabase con l'URL corretto
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-                // Scarica tutte le tessere ordinate per numero
-                const { data, error } = await supabaseClient
+                // Recupera solo i primi 5 in classifica
+                const { data, error } = await _supabase
                     .from('Tessere')
                     .select('*')
-                    .order('numero_tessera', { ascending: true });
+                    .eq('attiva', true)
+                    .order('punti', { ascending: false })
+                    .limit(5);
 
                 if (error) {
-                    throw error;
-                }
-
-                // Filtra e tiene SOLO le tessere che hanno un nome assegnato (nasconde quelle senza nome)
-                tutteLeTessere = (data || []).filter(t => t.nome_tifoso && t.nome_tifoso.trim() !== "");
-
-                if (tutteLeTessere.length === 0) {
-                    container.innerHTML = "<p style='text-align:center;'>Nessuna tessera attiva trovata nel database.</p>";
-                    banner.innerText = "⚠️ Nessuna tessera con nome presente";
-                    mostraClassifica();
+                    contenitore.innerHTML = `<p style="color:red;">Errore caricamento: ${error.message}</p>`;
                     return;
                 }
 
-                banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} tessere attive)`;
-                mostraTessere(tutteLeTessere);
-                mostraClassifica();
-            } catch (err) {
-                container.innerHTML = `<p class='error-msg'>Impossibile connettersi al database: ${err.message || err}</p>`;
-                banner.innerText = "❌ Errore di connessione";
-            }
-        }
-
-        function toggleClassifica() {
-            classificaVisibile = !classificaVisibile;
-            const gestioneDiv = document.getElementById('gestione-section');
-            const classificaDiv = document.getElementById('classifica-section');
-            const btn = document.getElementById('btn-toggle-classifica');
-
-            if (classificaVisibile) {
-                mostraClassifica();
-                gestioneDiv.style.display = 'none';
-                classificaDiv.style.display = 'block';
-                btn.innerText = "✏️ Torna alla Gestione Punti";
-            } else {
-                classificaDiv.style.display = 'none';
-                gestioneDiv.style.display = 'block';
-                btn.innerText = "🏆 Mostra Classifica";
-            }
-        }
-
-        function mostraClassifica() {
-            const container = document.getElementById('classifica-list');
-            if (!tutteLeTessere || tutteLeTessere.length === 0) {
-                container.innerHTML = "<p style='text-align:center;'>Nessun giocatore in classifica.</p>";
-                return;
-            }
-
-            // Ordina dal punteggio più alto al più basso; a parità di punti ordina per numero tessera
-            const ordinata = [...tutteLeTessere].sort((a, b) => {
-                const ptsA = a.punti !== undefined && a.punti !== null ? Number(a.punti) : 0;
-                const ptsB = b.punti !== undefined && b.punti !== null ? Number(b.punti) : 0;
-                if (ptsB !== ptsA) return ptsB - ptsA;
-                return (Number(a.numero_tessera) || 0) - (Number(b.numero_tessera) || 0);
-            });
-
-            let html = '';
-            ordinata.forEach((t, index) => {
-                const posizione = index + 1;
-                const punti = t.punti !== undefined && t.punti !== null ? t.punti : 0;
-
-                let medaglia = `${posizione}°`;
-                let extraClass = '';
-
-                if (posizione === 1) {
-                    medaglia = '🥇';
-                    extraClass = 'top-1';
-                } else if (posizione === 2) {
-                    medaglia = '🥈';
-                    extraClass = 'top-2';
-                } else if (posizione === 3) {
-                    medaglia = '🥉';
-                    extraClass = 'top-3';
+                if (!data || data.length === 0) {
+                    contenitore.innerHTML = `<p style="color:#666;">Nessuna tessera attiva in classifica.</p>`;
+                    return;
                 }
 
-                html += `
-                    <div class="rank-card ${extraClass}">
-                        <div class="rank-left">
-                            <div class="rank-badge">${medaglia}</div>
-                            <div>
-                                <div class="user-name">${t.nome_tifoso}</div>
-                                <div class="rank-sub">Tessera N° ${t.numero_tessera}</div>
-                            </div>
-                        </div>
-                        <div class="user-points">${punti} pt</div>
-                    </div>
+                let html = `
+                    <table class="ranking-table">
+                        <thead>
+                            <tr>
+                                <th class="pos-col">#</th>
+                                <th>Partecipante</th>
+                                <th style="text-align:right;">Punti</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                 `;
-            });
 
-            container.innerHTML = html;
-        }
+                data.forEach((tessera, index) => {
+                    const pos = index + 1;
+                    const nome = tessera.nome_tifoso || `Tessera N° ${tessera.numero_tessera}`;
+                    const punti = (tessera.punti !== undefined && tessera.punti !== null) ? tessera.punti : 0;
+                    
+                    let posDisplay = pos;
+                    if (pos === 1) posDisplay = '🥇';
+                    else if (pos === 2) posDisplay = '🥈';
+                    else if (pos === 3) posDisplay = '🥉';
 
-        function mostraTessere(lista) {
-            const container = document.getElementById('tessere-list');
-            if (!lista || lista.length === 0) {
-                container.innerHTML = "<p style='text-align:center;'>Nessun risultato trovato.</p>";
-                return;
-            }
+                    html += `
+                        <tr>
+                            <td class="pos-col ${pos <= 3 ? 'pos-podio' : ''}">${posDisplay}</td>
+                            <td class="nome-col">${nome}</td>
+                            <td class="punti-col">${punti} Pt</td>
+                        </tr>
+                    `;
+                });
 
-            let html = '';
-            lista.forEach(t => {
-                const nome = t.nome_tifoso;
-                const punti = t.punti !== undefined && t.punti !== null ? t.punti : 0;
-                html += `
-                    <div class="user-card" id="card-${t.id}">
-                        <div class="user-info">
-                            <div>
-                                <span class="user-tessera">Tessera N° ${t.numero_tessera}</span>
-                                <div class="user-name">${nome}</div>
-                            </div>
-                            <div class="user-points" id="pts-display-${t.id}">${punti} pt</div>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 10)">+10</button>
-                            <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 15)">+15</button>
-                            <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 20)">+20</button>
-                            <button class="btn-pts plus" onclick="modificaPunti(${t.id}, 50)">+50</button>
-                            <button class="btn-pts minus" onclick="modificaPunti(${t.id}, -10)">-10</button>
-                            <button class="btn-pts minus" onclick="modificaPunti(${t.id}, -15)">-15</button>
-                            <input type="number" class="custom-input" id="custom-${t.id}" placeholder="±Val">
-                            <button class="btn-pts" onclick="applicaCustom(${t.id})">OK</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
+                html += `</tbody></table>`;
+                contenitore.innerHTML = html;
 
-        function filtraTessere() {
-            const query = document.getElementById('search-input').value.toLowerCase();
-            const filtrate = tutteLeTessere.filter(t => {
-                const nome = (t.nome_tifoso || "").toLowerCase();
-                const numero = String(t.numero_tessera || "");
-                return nome.includes(query) || numero.includes(query);
-            });
-            mostraTessere(filtrate);
-        }
-
-        async function modificaPunti(id, delta) {
-            const tessera = tutteLeTessere.find(t => t.id === id);
-            if (!tessera) return;
-            const puntiAttuali = tessera.punti || 0;
-            const nuovoTotale = puntiAttuali + delta;
-            await aggiornaPuntiDB(id, nuovoTotale);
-        }
-
-        async function applicaCustom(id) {
-            const inputVal = document.getElementById(`custom-${id}`).value;
-            if (inputVal === '') return;
-            const delta = parseInt(inputVal, 10);
-            if (isNaN(delta)) return;
-
-            const tessera = tutteLeTessere.find(t => t.id === id);
-            if (!tessera) return;
-            const puntiAttuali = tessera.punti || 0;
-            const nuovoTotale = puntiAttuali + delta;
-            await aggiornaPuntiDB(id, nuovoTotale);
-            document.getElementById(`custom-${id}`).value = '';
-        }
-
-        async function aggiornaPuntiDB(id, nuovoTotale) {
-            const ptsDisplay = document.getElementById(`pts-display-${id}`);
-            const vecchioTesto = ptsDisplay.innerText;
-            ptsDisplay.innerText = "...";
-
-            try {
-                const { error } = await supabaseClient
-                    .from('Tessere')
-                    .update({ punti: nuovoTotale })
-                    .eq('id', id);
-
-                if (error) {
-                    throw error;
-                }
-
-                const tessera = tutteLeTessere.find(t => t.id === id);
-                if (tessera) {
-                    tessera.punti = nuovoTotale;
-                }
-                ptsDisplay.innerText = `${nuovoTotale} pt`;
-                mostraClassifica();
             } catch (err) {
-                alert("Errore durante l'aggiornamento su Supabase: " + (err.message || err));
-                ptsDisplay.innerText = vecchioTesto;
+                contenitore.innerHTML = `<p style="color:red;">Errore generico: ${err.message}</p>`;
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            impostaNavigazione();
+            caricaClassifica();
+        });
     </script>
 </body>
 </html>
