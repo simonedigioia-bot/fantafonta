@@ -144,11 +144,20 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
+        }
+
+        .user-info > div:first-child {
+            min-width: 0;
+            flex: 1;
         }
 
         .user-name {
             font-weight: 700;
-            font-size: 18px;
+            font-size: 17px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .user-tessera {
@@ -157,12 +166,17 @@
             background: var(--verde-chiaro);
             padding: 4px 10px;
             border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 4px;
         }
 
         .user-points {
             font-family: 'Anton', sans-serif;
             font-size: 24px;
             color: var(--verde-scuro);
+            white-space: nowrap;
+            flex-shrink: 0;
+            text-align: right;
         }
 
         .action-buttons {
@@ -197,16 +211,30 @@
         /* Sezione Classifica Admin */
         #classifica-section { display: none; }
 
+        .classifica-logo-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 5px 0 18px 0;
+        }
+
+        .classifica-logo {
+            max-width: 150px;
+            height: auto;
+            display: block;
+        }
+
         .rank-card {
             background: #fafafa;
             border: 2px solid #eee;
             border-radius: 14px;
             padding: 14px 16px;
             margin-bottom: 10px;
+            min-height: 76px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .rank-card.top-1 {
@@ -227,13 +255,21 @@
         .rank-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .rank-text {
+            min-width: 0;
+            flex: 1;
         }
 
         .rank-badge {
             font-family: 'Anton', sans-serif;
             font-size: 22px;
-            min-width: 42px;
+            width: 38px;
+            flex-shrink: 0;
             text-align: center;
             color: var(--verde-scuro);
         }
@@ -242,6 +278,7 @@
             font-size: 12px;
             color: #666;
             margin-top: 2px;
+            white-space: nowrap;
         }
 
         .error-msg { color: #dc2626; font-size: 14px; margin-top: 10px; text-align: center; font-weight: 600; line-height: 1.4; }
@@ -288,6 +325,9 @@
             </div>
 
             <div id="classifica-section">
+                <div class="classifica-logo-wrap">
+                    <img src="img/logo.png" alt="Logo FantaFonta" class="classifica-logo" onerror="if(!this.dataset.t1){this.dataset.t1=1;this.src='img/fantafonta.png';}else if(!this.dataset.t2){this.dataset.t2=1;this.src='img/logo-fantafonta.png';}else{this.style.display='none';}">
+                </div>
                 <div id="classifica-list">
                     <!-- Classifica dinamica ordinata per punteggio -->
                 </div>
@@ -340,10 +380,8 @@
                     throw new Error("Libreria Supabase non caricata.");
                 }
 
-                // Inizializza il client Supabase con l'URL corretto
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-                // Scarica tutte le tessere ordinate per numero
                 const { data, error } = await supabaseClient
                     .from('Tessere')
                     .select('*')
@@ -428,7 +466,7 @@
                     <div class="rank-card ${extraClass}">
                         <div class="rank-left">
                             <div class="rank-badge">${medaglia}</div>
-                            <div>
+                            <div class="rank-text">
                                 <div class="user-name">${t.nome_tifoso}</div>
                                 <div class="rank-sub">Tessera N° ${t.numero_tessera}</div>
                             </div>
