@@ -267,15 +267,16 @@
                     throw error;
                 }
 
-                tutteLeTessere = data || [];
+                // Filtra e tiene SOLO le tessere che hanno un nome assegnato (nasconde quelle senza nome)
+                tutteLeTessere = (data || []).filter(t => t.nome_tifoso && t.nome_tifoso.trim() !== "");
 
                 if (tutteLeTessere.length === 0) {
-                    container.innerHTML = "<p style='text-align:center;'>Nessuna tessera trovata nel database.</p>";
-                    banner.innerText = "⚠️ Tabella vuota";
+                    container.innerHTML = "<p style='text-align:center;'>Nessuna tessera attiva trovata nel database.</p>";
+                    banner.innerText = "⚠️ Nessuna tessera con nome presente";
                     return;
                 }
 
-                banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} abbonati caricate)`;
+                banner.innerText = `🌐 Connesso a Supabase (${tutteLeTessere.length} tessere attive)`;
                 mostraTessere(tutteLeTessere);
             } catch (err) {
                 container.innerHTML = `<p class='error-msg'>Impossibile connettersi al database: ${err.message || err}</p>`;
@@ -292,7 +293,7 @@
 
             let html = '';
             lista.forEach(t => {
-                const nome = t.nome_tifoso || "Tifoso senza nome";
+                const nome = t.nome_tifoso;
                 const punti = t.punti !== undefined && t.punti !== null ? t.punti : 0;
                 html += `
                     <div class="user-card" id="card-${t.id}">
